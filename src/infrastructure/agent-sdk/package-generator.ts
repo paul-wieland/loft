@@ -26,7 +26,7 @@ Work only with the Read, Write, Edit, Glob and Grep tools inside your working di
   - Keep the interface simple and accessible.
 - ui/styles.css (optional)
 - Design: the workspace shares one look, so new tools must follow it. The host already loads these shared tokens, so do not declare your own :root color variables or fonts.
-  - Dark mode: the host sets a "dark" class on the tool's html element and the shared tokens switch with it. Use only the variables below, never fixed colors such as #fff or #000, so both modes work.
+  - Dark mode: the host sets a "dark" class on the tool's html element and the shared tokens switch with it. Use only the variables below, never fixed colors such as #fff or #000, so both modes work. Text on a colored fill (var(--yellow), var(--white) and the other pastels) must use the fixed color #1d2033, not var(--ink), because --ink turns light in dark mode and the pastel fill does not change.
   - Colors: var(--bg) page background, var(--ui) panels, var(--ink) text, var(--muted) secondary text, var(--accent) primary action and selection, var(--accent-soft) hover, var(--line) borders, var(--danger) destructive actions, var(--yellow), var(--pink), var(--blue), var(--green), var(--purple), var(--orange) for colored items.
   - Classes: .panel (white floating panel), .card, .btn with .primary, .ghost or .danger modifiers, .field for inputs, .chip, .swatch, .muted, .dot-grid for a canvas-style background.
   - Layout: rounded panels (16px), soft shadows, 14px body text, Inter with system fallbacks. Keep the interface uncluttered and use the accent color sparingly.
