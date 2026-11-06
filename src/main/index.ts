@@ -21,36 +21,81 @@ import { registerDebugHandlers } from '../infrastructure/ipc/debug-handlers'
 import { registerGenerationHandlers } from '../infrastructure/ipc/generation-handlers'
 import { registerKeyHandlers } from '../infrastructure/ipc/key-handlers'
 import { registerPackageHandlers } from '../infrastructure/ipc/package-handlers'
+import { registerWindowHandlers } from '../infrastructure/ipc/window-handlers'
 import { SafeStorageKeyStore } from '../infrastructure/keychain/safe-storage-key-store'
 import { MemoryRequestStore } from '../infrastructure/memory/memory-request-store'
 import { registerPackageScheme, servePackages } from '../infrastructure/protocol/package-protocol'
 import { SqliteDataStore } from '../infrastructure/sqlite/sqlite-data-store'
+import { IPC } from '../shared/ipc'
 
 registerPackageScheme()
 
+let mainWindow: BrowserWindow | null = null
+let settingsWindow: BrowserWindow | null = null
+
+function webPreferences() {
+  return {
+    preload: join(__dirname, '../preload/index.js'),
+    contextIsolation: true,
+    nodeIntegration: false,
+    sandbox: true,
+  }
+}
+
+function loadRenderer(target: BrowserWindow, view?: 'settings'): void {
+  const rendererUrl = process.env['ELECTRON_RENDERER_URL']
+  if (rendererUrl) {
+    void target.loadURL(view ? `${rendererUrl}?window=${view}` : rendererUrl)
+  } else {
+    void target.loadFile(join(__dirname, '../renderer/index.html'), view ? { query: { window: view } } : undefined)
+  }
+}
+
 function createWindow(): void {
-  const window = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1100,
     height: 720,
     title: 'Workplace',
-    webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: true,
-    },
+    webPreferences: webPreferences(),
+  })
+  mainWindow.on('closed', () => {
+    mainWindow = null
   })
 
-  window.webContents.on('console-message', (_event, _level, message) => {
+  mainWindow.webContents.on('console-message', (_event, _level, message) => {
     console.log('[renderer]', message)
   })
 
-  const rendererUrl = process.env['ELECTRON_RENDERER_URL']
-  if (rendererUrl) {
-    void window.loadURL(rendererUrl)
-  } else {
-    void window.loadFile(join(__dirname, '../renderer/index.html'))
+  loadRenderer(mainWindow)
+}
+
+function openSettingsWindow(): void {
+  if (settingsWindow) {
+    settingsWindow.focus()
+    return
   }
+
+  settingsWindow = new BrowserWindow({
+    width: 440,
+    height: 640,
+    title: 'Settings',
+    parent: mainWindow ?? undefined,
+    minimizable: false,
+    fullscreenable: false,
+    webPreferences: webPreferences(),
+  })
+  settingsWindow.on('closed', () => {
+    settingsWindow = null
+  })
+
+  loadRenderer(settingsWindow, 'settings')
+}
+
+function requestDatabaseView(): void {
+  if (!mainWindow) return
+  mainWindow.show()
+  mainWindow.focus()
+  mainWindow.webContents.send(IPC.windowDatabaseRequested)
 }
 
 app.whenReady().then(() => {
@@ -82,6 +127,7 @@ app.whenReady().then(() => {
   })
   registerDataHandlers({ call: new PackageData(packages, data) })
   registerDebugHandlers({ inspect: new InspectData(data) })
+  registerWindowHandlers({ openSettings: openSettingsWindow, requestDatabase: requestDatabaseView })
   servePackages(packagesRoot)
 
   createWindow()

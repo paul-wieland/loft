@@ -26,6 +26,17 @@ const api: WorkplaceApi = {
     tables: (packageId) => ipcRenderer.invoke(IPC.debugTables, packageId),
     rows: (packageId, table) => ipcRenderer.invoke(IPC.debugRows, packageId, table),
   },
+  windows: {
+    openSettings: () => ipcRenderer.invoke(IPC.windowOpenSettings),
+    openDatabase: () => ipcRenderer.invoke(IPC.windowOpenDatabase),
+    onDatabaseRequested: (callback) => {
+      const listener = () => callback()
+      ipcRenderer.on(IPC.windowDatabaseRequested, listener)
+      return () => {
+        ipcRenderer.removeListener(IPC.windowDatabaseRequested, listener)
+      }
+    },
+  },
 }
 
 contextBridge.exposeInMainWorld('workplace', api)

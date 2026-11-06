@@ -1,11 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { MessageSquarePlus, Send, Trash2, Wrench, X } from 'lucide-react'
+import { MessageSquarePlus, Send, Settings, Trash2, Wrench, X } from 'lucide-react'
 
 import type { Review } from '../application/generation/get-review'
 import type { PackageManifest } from '../domain/package/manifest'
 import { DatabaseView } from '@/components/database-view'
 import { ReviewPanel } from '@/components/review-panel'
-import { SettingsMenu } from '@/components/settings-menu'
 import { ToolView } from '@/components/tool-view'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,6 +27,8 @@ export function App() {
   useEffect(() => {
     void refreshTools()
   }, [])
+
+  useEffect(() => window.workplace.windows.onDatabaseRequested(() => setDatabaseOpen(true)), [])
 
   const activeTool = tools.find((tool) => tool.id === activeToolId) ?? null
 
@@ -149,7 +150,12 @@ export function App() {
             </Button>
           ))}
         </nav>
-        <SettingsMenu onOpenDatabase={() => setDatabaseOpen(true)} />
+        <div className="border-t p-3">
+          <Button variant="ghost" className="w-full justify-start" onClick={() => void window.workplace.windows.openSettings()}>
+            <Settings />
+            Settings
+          </Button>
+        </div>
       </aside>
 
       <main className="panel flex min-w-0 flex-1 flex-col overflow-hidden">

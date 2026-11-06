@@ -20,6 +20,9 @@ export const IPC = {
   debugDatabases: 'debug:databases',
   debugTables: 'debug:tables',
   debugRows: 'debug:rows',
+  windowOpenSettings: 'window:open-settings',
+  windowOpenDatabase: 'window:open-database',
+  windowDatabaseRequested: 'window:database-requested',
 } as const
 
 export interface WorkplaceApi {
@@ -45,5 +48,10 @@ export interface WorkplaceApi {
     databases(): Promise<string[]>
     tables(packageId: string): Promise<Result<string[], string>>
     rows(packageId: string, table: string): Promise<Result<TableRows, string>>
+  }
+  windows: {
+    openSettings(): Promise<void>
+    openDatabase(): Promise<void>
+    onDatabaseRequested(callback: () => void): () => void
   }
 }
