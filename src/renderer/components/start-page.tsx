@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSun, MapPin, Plus, Snowflake, Sun, X, type LucideIcon } from 'lucide-react'
+import { Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSun, Info, MapPin, Plus, Snowflake, Sun, X, type LucideIcon } from 'lucide-react'
 
 import { MAX_LOCATIONS, nearestCity, needsTimezone, type StartPageLocation } from '@/lib/start-page-settings'
 import { describeWeather, fetchCurrentWeather, searchCities, type CurrentWeather, type WeatherIcon } from '@/lib/weather'
@@ -28,6 +28,7 @@ interface StartPageProps {
 export function StartPage({ locations, onLocationsChange, onNewTool }: StartPageProps) {
   const [now, setNow] = useState(() => new Date())
   const [addingCity, setAddingCity] = useState(false)
+  const [showSource, setShowSource] = useState(false)
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(new Date()), 1000)
@@ -77,7 +78,25 @@ export function StartPage({ locations, onLocationsChange, onNewTool }: StartPage
           <Plus />
           New tool
         </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Where the weather comes from"
+          aria-expanded={showSource}
+          title="Where the weather comes from"
+          onClick={() => setShowSource((open) => !open)}
+        >
+          <Info />
+        </Button>
       </div>
+
+      {showSource && (
+        <p className="panel max-w-md p-3 text-xs text-muted-foreground">
+          Weather and the time zone of each city come from Open-Meteo (open-meteo.com), a free service that needs no
+          account. Only the coordinates of your cities are sent to it. Weather is refreshed every 30 minutes. City search
+          uses Open-Meteo's geocoding service.
+        </p>
+      )}
 
       {locations.length === 0 ? (
         <p className="text-sm text-muted-foreground">Add a city to see its time and weather.</p>
