@@ -87,10 +87,6 @@ export function AddCityDialog({ locations, onAdd, onClose }: AddCityDialogProps)
         </header>
 
         <div className="space-y-4 overflow-y-auto p-6">
-          <p className="text-sm text-muted-foreground">
-            {locations.length} of {MAX_LOCATIONS} cities shown.
-          </p>
-
           <Button variant="outline" size="sm" onClick={useMyLocation} disabled={full}>
             <MapPin />
             Use my location

@@ -11,7 +11,7 @@ export interface StartPageSettings {
   locations: StartPageLocation[]
 }
 
-export const MAX_LOCATIONS = 4
+export const MAX_LOCATIONS = 32
 export const DEFAULT_START_PAGE: StartPageSettings = { enabled: true, locations: [] }
 
 const STORAGE_KEY = 'workplace-start-page'
