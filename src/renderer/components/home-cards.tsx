@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { ChevronRight } from 'lucide-react'
 
 import type { PackageManifest } from '../../domain/package/manifest'
 import { ToolIcon } from '@/components/tool-icon'
@@ -80,24 +81,25 @@ function HomeCard({ tool, onOpen }: { tool: PackageManifest; onOpen: () => void 
 
   return (
     <div className={cn('panel flex min-w-0 flex-col overflow-hidden', tool.homeCard?.size === 'wide' && 'sm:col-span-2')}>
-      <button
-        type="button"
-        onClick={onOpen}
-        className="flex items-center gap-2 px-3 py-2 text-left text-xs font-medium hover:bg-accent"
-      >
-        <ToolIcon name={tool.icon} className="size-3.5" />
-        <span className="truncate">{tool.name}</span>
+      <button type="button" onClick={onOpen} className="group flex items-center gap-2 px-3 pb-1 pt-3 text-left">
+        <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-[#5b5bf0] to-[#e65bd6] text-white">
+          <ToolIcon name={tool.icon} className="size-3" />
+        </span>
+        <span className="min-w-0 flex-1 truncate text-xs font-semibold">{tool.name}</span>
+        <ChevronRight className="size-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
       </button>
       {failed ? (
         <p className="px-3 pb-3 text-xs text-muted-foreground">This card did not load.</p>
       ) : (
-        <iframe
-          ref={frameRef}
-          title={`${tool.name} card`}
-          src={`workplace-pkg://${tool.id}/card.html`}
-          sandbox="allow-scripts"
-          className="h-24 w-full border-0"
-        />
+        <div className="px-3 pb-3">
+          <iframe
+            ref={frameRef}
+            title={`${tool.name} card`}
+            src={`workplace-pkg://${tool.id}/card.html`}
+            sandbox="allow-scripts"
+            className="h-24 w-full border-0 bg-transparent"
+          />
+        </div>
       )}
     </div>
   )
