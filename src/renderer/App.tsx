@@ -6,10 +6,12 @@ import type { PackageManifest } from '../domain/package/manifest'
 import { ChatPanel, type Message } from '@/components/chat-panel'
 import { DatabaseView } from '@/components/database-view'
 import { NewToolDialog } from '@/components/new-tool-dialog'
+import { ReviewDialog } from '@/components/review-dialog'
 import { SettingsDialog } from '@/components/settings-dialog'
 import { ToolActions } from '@/components/tool-actions'
 import { ToolView } from '@/components/tool-view'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 interface Thread {
   messages: Message[]
@@ -31,6 +33,8 @@ export function App() {
   const [databaseOpen, setDatabaseOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [newToolOpen, setNewToolOpen] = useState(false)
+  // Thread whose generated change is open in the review dialog.
+  const [reviewKey, setReviewKey] = useState<string | null>(null)
 
   useEffect(() => {
     void refreshTools()
@@ -40,6 +44,7 @@ export function App() {
   // In edit mode the chat talks to the selected tool only; otherwise it talks about new tools.
   const threadKey = editing && activeTool ? activeTool.id : NEW_TOOL_THREAD
   const thread = threads[threadKey] ?? EMPTY_THREAD
+  const reviewing = (reviewKey && threads[reviewKey]?.review) || null
 
   async function refreshTools() {
     setTools(await window.workplace.packages.list())
@@ -92,6 +97,7 @@ export function App() {
         },
       ],
     }))
+    setReviewKey(key)
     setBusy(false)
   }
 
@@ -114,15 +120,16 @@ export function App() {
   }
 
   async function approve() {
-    const key = threadKey
-    const review = thread.review
-    if (!review) return
+    const key = reviewKey
+    const review = reviewing
+    if (!key || !review) return
     const requestId = review.request.id
     const packageId = review.request.packageId
 
     // A change to an existing tool has to keep its id, so it replaces that tool and nothing else.
     if (key !== NEW_TOOL_THREAD && packageId !== key) {
       addMessage(key, { role: 'system', text: `This change must keep the id "${key}". Reject it and describe the change again.` })
+      setReviewKey(null)
       return
     }
 
@@ -143,6 +150,7 @@ export function App() {
       return
     }
 
+    setReviewKey(null)
     if (key === NEW_TOOL_THREAD) updateThread(NEW_TOOL_THREAD, () => EMPTY_THREAD)
     else updateThread(key, (current) => ({ ...current, review: null }))
     await refreshTools()
@@ -153,12 +161,13 @@ export function App() {
   }
 
   async function reject() {
-    const key = threadKey
-    const review = thread.review
-    if (!review) return
+    const key = reviewKey
+    const review = reviewing
+    if (!key || !review) return
     setBusy(true)
     await window.workplace.generation.reject(review.request.id)
     setBusy(false)
+    setReviewKey(null)
     updateThread(key, (current) => ({
       ...current,
       review: null,
@@ -246,8 +255,10 @@ export function App() {
           <DatabaseView />
         ) : activeTool ? (
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="flex min-h-0 flex-1">
-              <ToolView key={`${activeTool.id}:${revision}`} manifest={activeTool} />
+            <div className={cn('flex min-h-0 flex-1', editing && 'bg-gradient-to-br from-[#5b5bf0] via-[#8b5cf6] to-[#e65bd6] p-1.5')}>
+              <div className="flex min-h-0 flex-1 overflow-hidden rounded-[14px] bg-background">
+                <ToolView key={`${activeTool.id}:${revision}`} manifest={activeTool} />
+              </div>
             </div>
             {editing && (
               <ChatPanel
@@ -262,8 +273,7 @@ export function App() {
                 emptyHint="Describe a change, for example “add a search box”."
                 onDraftChange={setDraft}
                 onSend={(event) => void send(event)}
-                onApprove={() => void approve()}
-                onReject={() => void reject()}
+                onReview={() => setReviewKey(threadKey)}
               />
             )}
           </div>
@@ -278,12 +288,20 @@ export function App() {
             emptyHint="Use New tool to describe a tool, or type a description here."
             onDraftChange={setDraft}
             onSend={(event) => void send(event)}
-            onApprove={() => void approve()}
-            onReject={() => void reject()}
+            onReview={() => setReviewKey(threadKey)}
           />
         )}
       </main>
 
+      {reviewKey && reviewing && (
+        <ReviewDialog
+          review={reviewing}
+          busy={busy}
+          onApprove={() => void approve()}
+          onReject={() => void reject()}
+          onClose={() => setReviewKey(null)}
+        />
+      )}
       {settingsOpen && (
         <SettingsDialog onClose={() => setSettingsOpen(false)} onOpenDatabase={() => setDatabaseOpen(true)} />
       )}

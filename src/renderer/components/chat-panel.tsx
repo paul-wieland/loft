@@ -2,7 +2,6 @@ import type { FormEvent } from 'react'
 import { MessageSquarePlus, Send, X } from 'lucide-react'
 
 import type { Review } from '../../application/generation/get-review'
-import { ReviewPanel } from '@/components/review-panel'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -24,8 +23,7 @@ interface ChatPanelProps {
   emptyHint: string
   onDraftChange: (draft: string) => void
   onSend: (event: FormEvent) => void
-  onApprove: () => void
-  onReject: () => void
+  onReview: () => void
 }
 
 export function ChatPanel({
@@ -40,14 +38,13 @@ export function ChatPanel({
   emptyHint,
   onDraftChange,
   onSend,
-  onApprove,
-  onReject,
+  onReview,
 }: ChatPanelProps) {
   return (
     <section className={cn('flex min-h-0 flex-col overflow-hidden bg-card', className)} aria-label="Chat">
       {banner && (
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b bg-primary/10 px-4 py-2 text-sm">
-          <span className="font-medium text-primary">{banner}</span>
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b bg-gradient-to-r from-[#5b5bf0]/15 via-[#8b5cf6]/15 to-[#e65bd6]/15 px-4 py-2 text-sm">
+          <span className="font-medium bg-gradient-to-r from-[#5b5bf0] to-[#e65bd6] bg-clip-text text-transparent">{banner}</span>
           {onClose && (
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X />
@@ -57,7 +54,16 @@ export function ChatPanel({
         </div>
       )}
 
-      {review && <ReviewPanel review={review} busy={busy} onApprove={onApprove} onReject={onReject} />}
+      {review && (
+        <div className="flex shrink-0 items-center justify-between gap-3 border-t bg-primary/10 px-4 py-2 text-sm">
+          <span>
+            Changes for <strong>{review.request.packageId}</strong> are ready to review.
+          </span>
+          <Button size="sm" onClick={onReview}>
+            Review
+          </Button>
+        </div>
+      )}
 
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
         {messages.length === 0 ? (
