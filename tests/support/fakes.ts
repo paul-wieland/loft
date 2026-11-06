@@ -1,3 +1,4 @@
+import type { DataBackups } from '../../src/application/ports/data-backups'
 import type { PackageManifest } from '../../src/domain/package/manifest'
 import type { DataStore, StoredRecord } from '../../src/application/ports/data-store'
 import type { KeyStore } from '../../src/application/ports/key-store'
@@ -129,6 +130,15 @@ export class InMemoryPackageRepository implements PackageRepository {
 
 export class InMemoryDataStore implements DataStore {
   readonly deletedStores: string[] = []
+  readonly versions = new Map<string, number>()
+
+  async schemaVersion(packageId: string): Promise<number | null> {
+    return this.versions.get(packageId) ?? null
+  }
+
+  async setSchemaVersion(packageId: string, version: number): Promise<void> {
+    this.versions.set(packageId, version)
+  }
 
   async list(): Promise<StoredRecord[]> {
     return []
@@ -152,6 +162,15 @@ export class InMemoryDataStore implements DataStore {
 
   async deleteStore(packageId: string): Promise<void> {
     this.deletedStores.push(packageId)
+  }
+}
+
+export class InMemoryDataBackups implements DataBackups {
+  readonly snapshots: string[] = []
+
+  async snapshot(packageId: string): Promise<string | null> {
+    this.snapshots.push(packageId)
+    return `backup/${packageId}`
   }
 }
 

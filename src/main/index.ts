@@ -25,6 +25,7 @@ import { SafeStorageKeyStore } from '../infrastructure/keychain/safe-storage-key
 import { MemoryRequestStore } from '../infrastructure/memory/memory-request-store'
 import { registerPackageScheme, servePackages } from '../infrastructure/protocol/package-protocol'
 import { SqliteDataStore } from '../infrastructure/sqlite/sqlite-data-store'
+import { FileDataBackups } from '../infrastructure/fs/file-data-backups'
 
 registerPackageScheme()
 
@@ -65,6 +66,9 @@ app.whenReady().then(() => {
   const validate = new ValidateStagedPackage(requests, staging)
   const generator = new AgentSdkPackageGenerator(stagingRoot, keyStore)
 
+  const data = new SqliteDataStore(join(userData, 'data'))
+  const backups = new FileDataBackups(join(userData, 'data'), join(userData, 'backups'))
+
   registerKeyHandlers({
     status: new GetApiKeyStatus(keyStore),
     save: new SaveApiKey(keyStore),
@@ -72,10 +76,9 @@ app.whenReady().then(() => {
   registerGenerationHandlers({
     start: new StartGeneration(requests, staging, generator, validate, randomUUID),
     review: new GetReview(requests, staging),
-    approve: new ApproveRequest(requests, staging, packages),
+    approve: new ApproveRequest(requests, staging, packages, data, backups),
     reject: new RejectRequest(requests, staging),
   })
-  const data = new SqliteDataStore(join(userData, 'data'))
   registerPackageHandlers({
     list: new ListPackages(packages),
     uninstall: new UninstallPackage(packages, data),

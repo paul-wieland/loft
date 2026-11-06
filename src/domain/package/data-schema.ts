@@ -15,7 +15,10 @@ export interface CollectionDefinition {
   fields: Record<string, FieldDefinition>
 }
 
+export const DEFAULT_SCHEMA_VERSION = 1
+
 export interface DataSchema {
+  schemaVersion: number
   collections: Record<string, CollectionDefinition>
 }
 
@@ -61,7 +64,12 @@ export function validateDataSchema(raw: unknown): Result<DataSchema, string[]> {
     }
   }
 
-  return errors.length > 0 ? err(errors) : ok(raw as unknown as DataSchema)
+  const schemaVersion = raw.schemaVersion ?? DEFAULT_SCHEMA_VERSION
+  if (typeof schemaVersion !== 'number' || !Number.isInteger(schemaVersion) || schemaVersion < 1) {
+    errors.push('schemaVersion must be a positive integer')
+  }
+
+  return errors.length > 0 ? err(errors) : ok({ ...(raw as unknown as Omit<DataSchema, 'schemaVersion'>), schemaVersion: schemaVersion as number })
 }
 
 function isFieldType(value: unknown): value is FieldType {

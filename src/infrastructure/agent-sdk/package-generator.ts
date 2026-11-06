@@ -33,7 +33,9 @@ Work only with the Read, Write, Edit, Glob and Grep tools inside your working di
   - Colors: var(--bg) page background, var(--ui) panels, var(--ink) text, var(--muted) secondary text, var(--accent) primary action and selection, var(--accent-soft) hover, var(--line) borders, var(--danger) destructive actions, var(--yellow), var(--pink), var(--blue), var(--green), var(--purple), var(--orange) for colored items.
   - Classes: .panel (white floating panel), .card, .btn with .primary, .ghost or .danger modifiers, .field for inputs, .chip, .swatch, .muted, .dot-grid for a canvas-style background.
   - Layout: rounded panels (16px), soft shadows, 14px body text, Inter with system fallbacks. Keep the interface uncluttered and use the accent color sparingly.
-- schema.json (only when the tool keeps data): { "collections": { "<name>": { "fields": { "<field>": { "type": "string" | "number" | "boolean" | "date", "required": true, "default": ... } } } } }
+- schema.json (only when the tool keeps data): { "schemaVersion": 1, "collections": { "<name>": { "fields": { "<field>": { "type": "string" | "number" | "boolean" | "date", "required": true, "default": ... } } } } }
+  - Keep schemaVersion unchanged when editing a tool, unless the instructions say to change it.
+  - Keep changes backward compatible: add a field only with a "default", and never remove, rename or change the type of an existing field. Old records must still load.
 
 Persistence:
 - If the tool must keep data across restarts, put "store" in permissions and declare its collections in schema.json.

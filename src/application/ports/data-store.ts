@@ -14,4 +14,7 @@ export interface DataStore {
   update(packageId: string, collection: string, id: string, data: RecordData): Promise<StoredRecord | null>
   remove(packageId: string, collection: string, id: string): Promise<boolean>
   deleteStore(packageId: string): Promise<void>
+  // null when the package has no database yet
+  schemaVersion(packageId: string): Promise<number | null>
+  setSchemaVersion(packageId: string, version: number): Promise<void>
 }

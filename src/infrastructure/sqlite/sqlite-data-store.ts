@@ -67,6 +67,22 @@ export class SqliteDataStore implements DataStore, DataInspector {
     return Number(result.changes) > 0
   }
 
+  async schemaVersion(packageId: string): Promise<number | null> {
+    const db = this.existing(packageId)
+    if (!db) return null
+    const meta = db.prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = '_meta'`).get()
+    if (!meta) return 1 // databases created before schema versions were recorded
+    const row = db.prepare('SELECT schema_version AS version FROM _meta').get() as unknown as { version: number } | undefined
+    return row?.version ?? 1
+  }
+
+  async setSchemaVersion(packageId: string, version: number): Promise<void> {
+    const db = this.handle(packageId)
+    db.exec('CREATE TABLE IF NOT EXISTS _meta (schema_version INTEGER NOT NULL)')
+    db.exec('DELETE FROM _meta')
+    db.prepare('INSERT INTO _meta (schema_version) VALUES (?)').run(version)
+  }
+
   async databases(): Promise<string[]> {
     if (!existsSync(this.dataRoot)) return []
     return readdirSync(this.dataRoot)
@@ -81,7 +97,7 @@ export class SqliteDataStore implements DataStore, DataInspector {
     const rows = db
       .prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name`)
       .all() as unknown as { name: string }[]
-    return rows.map((row) => row.name)
+    return rows.map((row) => row.name).filter((name) => name !== '_meta')
   }
 
   async rows(packageId: string, table: string, limit: number): Promise<TableRows> {
@@ -102,6 +118,15 @@ export class SqliteDataStore implements DataStore, DataInspector {
     this.handles.get(packageId)?.close()
     this.handles.delete(packageId)
     await rm(join(this.dataRoot, `${packageId}.db`), { force: true })
+  }
+
+  private handle(packageId: string): DatabaseSync {
+    const cached = this.handles.get(packageId)
+    if (cached) return cached
+    mkdirSync(this.dataRoot, { recursive: true })
+    const db = new DatabaseSync(join(this.dataRoot, `${packageId}.db`))
+    this.handles.set(packageId, db)
+    return db
   }
 
   private existing(packageId: string): DatabaseSync | null {

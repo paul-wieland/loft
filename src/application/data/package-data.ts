@@ -1,4 +1,4 @@
-import { validateDataSchema, type DataSchema } from '../../domain/package/data-schema'
+import { DEFAULT_SCHEMA_VERSION, validateDataSchema, type DataSchema } from '../../domain/package/data-schema'
 import { validateRecord } from '../../domain/package/records'
 import { err, ok, type Result } from '../../domain/shared/result'
 import type { DataStore } from '../ports/data-store'
@@ -69,7 +69,7 @@ export class PackageData {
 
   private async loadSchema(packageId: string): Promise<Result<DataSchema, string>> {
     const text = await this.packages.readPackageFile(packageId, 'schema.json')
-    if (text === null) return ok({ collections: {} })
+    if (text === null) return ok({ schemaVersion: DEFAULT_SCHEMA_VERSION, collections: {} })
 
     let raw: unknown
     try {

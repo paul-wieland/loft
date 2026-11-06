@@ -84,3 +84,19 @@ describe('package data through the real store', () => {
     expect(listed).toMatchObject({ ok: true, value: [{ text: 'survives restart', done: false }] })
   })
 })
+
+describe('SqliteDataStore schema versions', () => {
+  it('reads null before any database exists, 1 for a legacy database, and the recorded version after', async () => {
+    const store = new SqliteDataStore(join(root, 'data'))
+
+    expect(await store.schemaVersion('versioned-tool')).toBeNull()
+
+    await store.insert('versioned-tool', 'items', { text: 'kept' })
+    expect(await store.schemaVersion('versioned-tool')).toBe(1)
+
+    await store.setSchemaVersion('versioned-tool', 3)
+    expect(await store.schemaVersion('versioned-tool')).toBe(3)
+    expect(await store.tables('versioned-tool')).toEqual(['items'])
+  })
+})
+

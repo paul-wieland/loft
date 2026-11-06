@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { ApproveRequest } from '../../../src/application/generation/approve-request'
 import { RejectRequest } from '../../../src/application/generation/reject-request'
 import {
+  InMemoryDataBackups,
+  InMemoryDataStore,
   InMemoryPackageRepository,
   InMemoryRequestStore,
   InMemoryStagingArea,
@@ -12,12 +14,16 @@ function setup() {
   const requests = new InMemoryRequestStore()
   const staging = new InMemoryStagingArea()
   const packages = new InMemoryPackageRepository()
+  const data = new InMemoryDataStore()
+  const backups = new InMemoryDataBackups()
   requests.seed(awaitingReviewRequest())
   return {
     requests,
     staging,
     packages,
-    approve: new ApproveRequest(requests, staging, packages),
+    data,
+    backups,
+    approve: new ApproveRequest(requests, staging, packages, data, backups),
     reject: new RejectRequest(requests, staging),
   }
 }
@@ -80,5 +86,54 @@ describe('RejectRequest', () => {
     expect(await reject.execute('req-1')).toEqual({ ok: true, value: undefined })
     expect(staging.discarded).toEqual(['req-1'])
     expect((await requests.get('req-1'))?.state).toBe('rejected')
+  })
+})
+
+describe('ApproveRequest schema versions', () => {
+  const schemaAt = (version: number) => JSON.stringify({ collections: { items: { fields: {} } }, schemaVersion: version })
+
+  it('installs a new schema version over data at the same version and backs the data up first', async () => {
+    const { data, backups, staging, approve } = setup()
+    staging.stage('req-1', { 'schema.json': schemaAt(2) })
+    await data.setSchemaVersion('todo-list', 2)
+
+    const result = await approve.execute({ requestId: 'req-1', replace: true })
+
+    expect(result.ok).toBe(true)
+    expect(backups.snapshots).toEqual(['todo-list'])
+    expect(await data.schemaVersion('todo-list')).toBe(2)
+  })
+
+  it('refuses an install whose schema is older than the saved data', async () => {
+    const { data, staging, approve } = setup()
+    staging.stage('req-1', { 'schema.json': schemaAt(1) })
+    await data.setSchemaVersion('todo-list', 2)
+
+    const result = await approve.execute({ requestId: 'req-1', replace: true })
+
+    expect(result.ok).toBe(false)
+    expect(staging.promoted).toEqual([])
+  })
+
+  it('refuses an install that would need a migration, and leaves the data alone', async () => {
+    const { data, backups, staging, approve } = setup()
+    staging.stage('req-1', { 'schema.json': schemaAt(3) })
+    await data.setSchemaVersion('todo-list', 2)
+
+    const result = await approve.execute({ requestId: 'req-1', replace: true })
+
+    expect(result.ok).toBe(false)
+    expect(backups.snapshots).toEqual([])
+    expect(staging.promoted).toEqual([])
+  })
+
+  it('does not back up anything for a tool that has no saved data yet', async () => {
+    const { backups, staging, approve, data } = setup()
+    staging.stage('req-1', { 'schema.json': schemaAt(1) })
+
+    await approve.execute({ requestId: 'req-1' })
+
+    expect(backups.snapshots).toEqual([])
+    expect(await data.schemaVersion('todo-list')).toBe(1)
   })
 })
