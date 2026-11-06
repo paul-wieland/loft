@@ -3,9 +3,11 @@ import { readFile, stat } from 'node:fs/promises'
 import { extname, join, resolve, sep } from 'node:path'
 
 import { isValidPackageId } from '../../domain/package/package-id'
+import { DESIGN_TOKENS_CSS } from './design-tokens'
 import { HOST_BRIDGE_SOURCE } from './host-bridge'
 
 const BRIDGE_PATH = '__workplace/bridge.js'
+const TOKENS_PATH = '__workplace/tokens.css'
 
 export const PACKAGE_SCHEME = 'workplace-pkg'
 
@@ -36,6 +38,7 @@ export function servePackages(packagesRoot: string): void {
 
     if (relativePath === 'index.html') return wrapperPage(packageId, packageDir)
     if (relativePath === BRIDGE_PATH) return script(HOST_BRIDGE_SOURCE)
+    if (relativePath === TOKENS_PATH) return stylesheet(DESIGN_TOKENS_CSS)
 
     const file = resolve(packageDir, relativePath)
     if (!file.startsWith(packageDir + sep)) return notFound()
@@ -63,6 +66,7 @@ async function wrapperPage(packageId: string, packageDir: string): Promise<Respo
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="${TOKENS_PATH}" />
     ${hasStyles ? '<link rel="stylesheet" href="ui/styles.css" />' : ''}
   </head>
   <body>
@@ -86,6 +90,12 @@ async function exists(path: string): Promise<boolean> {
   } catch {
     return false
   }
+}
+
+function stylesheet(source: string): Response {
+  return new Response(source, {
+    headers: { 'content-type': 'text/css', 'access-control-allow-origin': '*' },
+  })
 }
 
 function script(source: string): Response {

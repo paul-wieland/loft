@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Boxes, Database, MessageSquarePlus, Send, Settings, Trash2, Wrench } from 'lucide-react'
+import { Database, MessageSquarePlus, Send, Settings, Trash2, Wrench } from 'lucide-react'
 
 import type { Review } from '../application/generation/get-review'
 import type { PackageManifest } from '../domain/package/manifest'
@@ -129,10 +129,10 @@ export function App() {
   }
 
   return (
-    <div className="flex h-screen">
-      <aside className="flex w-60 shrink-0 flex-col border-r bg-card">
-        <div className="flex h-14 items-center gap-2 px-4 font-semibold">
-          <Boxes className="size-5 text-primary" />
+    <div className="dot-grid flex h-screen gap-3 p-3">
+      <aside className="panel flex w-60 shrink-0 flex-col overflow-hidden">
+        <div className="flex h-14 items-center gap-2.5 px-4 font-semibold">
+          <span className="size-6 rounded-lg bg-gradient-to-br from-[#5b5bf0] to-[#e65bd6]" />
           Workplace
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2" aria-label="Tools">
@@ -153,7 +153,7 @@ export function App() {
         </nav>
       </aside>
 
-      <main className="flex min-w-0 flex-1 flex-col">
+      <main className="panel flex min-w-0 flex-1 flex-col overflow-hidden">
         <header className="flex h-14 items-center justify-between border-b px-6">
           <h1 className="text-sm font-medium">{activeTool ? activeTool.name : 'Chat'}</h1>
           <div className="flex items-center gap-1">
