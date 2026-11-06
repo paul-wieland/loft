@@ -31,6 +31,15 @@ export function StartPage({ locations, onLocationsChange, onNewTool }: StartPage
   const [showSource, setShowSource] = useState(false)
 
   useEffect(() => {
+    if (!showSource) return
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setShowSource(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [showSource])
+
+  useEffect(() => {
     const id = window.setInterval(() => setNow(new Date()), 1000)
     return () => window.clearInterval(id)
   }, [])
@@ -82,6 +91,7 @@ export function StartPage({ locations, onLocationsChange, onNewTool }: StartPage
           variant="ghost"
           size="icon"
           aria-label="Where the weather comes from"
+          aria-haspopup="dialog"
           aria-expanded={showSource}
           title="Where the weather comes from"
           onClick={() => setShowSource((open) => !open)}
@@ -91,11 +101,30 @@ export function StartPage({ locations, onLocationsChange, onNewTool }: StartPage
       </div>
 
       {showSource && (
-        <p className="panel max-w-md p-3 text-xs text-muted-foreground">
-          Weather and the time zone of each city come from Open-Meteo (open-meteo.com), a free service that needs no
-          account. Only the coordinates of your cities are sent to it. Weather is refreshed every 30 minutes. City search
-          uses Open-Meteo's geocoding service.
-        </p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onMouseDown={() => setShowSource(false)}>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Where the weather comes from"
+            className="panel w-full max-w-md space-y-3 p-6 text-left shadow-xl"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <h2 className="font-semibold">Where the weather comes from</h2>
+              <Button variant="ghost" size="icon" aria-label="Close" title="Close" onClick={() => setShowSource(false)}>
+                <X />
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Weather and the time zone of each city come from Open-Meteo (open-meteo.com), a free service that needs no
+              account.
+            </p>
+            <p className="text-sm text-muted-foreground">Only the coordinates of your cities are sent to it.</p>
+            <p className="text-sm text-muted-foreground">
+              Weather is refreshed every 30 minutes. City search uses Open-Meteo's geocoding service.
+            </p>
+          </div>
+        </div>
       )}
 
       {locations.length === 0 ? (
