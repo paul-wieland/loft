@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import type { TableRows } from '../../application/ports/data-inspector'
 import { Button } from '@/components/ui/button'
 
-export function DatabaseView() {
+export function DatabaseView({ packageId }: { packageId?: string | null }) {
   const [databases, setDatabases] = useState<string[]>([])
   const [selected, setSelected] = useState<string | null>(null)
   const [tables, setTables] = useState<string[]>([])
@@ -14,6 +14,10 @@ export function DatabaseView() {
   useEffect(() => {
     void loadDatabases()
   }, [])
+
+  useEffect(() => {
+    if (packageId) void openDatabase(packageId)
+  }, [packageId])
 
   async function loadDatabases() {
     setDatabases(await window.workplace.debug.databases())

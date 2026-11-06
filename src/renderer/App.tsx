@@ -13,6 +13,7 @@ import { ToolActions } from '@/components/tool-actions'
 import { ToolIcon } from '@/components/tool-icon'
 import { ToolView } from '@/components/tool-view'
 import { Button } from '@/components/ui/button'
+import { applyToolOrder, loadToolOrder, moveTool, saveToolOrder } from '@/lib/tool-order'
 import { cn } from '@/lib/utils'
 
 interface Thread {
@@ -33,8 +34,13 @@ export function App() {
   const [busy, setBusy] = useState(false)
   const [revision, setRevision] = useState(0)
   const [databaseOpen, setDatabaseOpen] = useState(false)
+  // Tool whose database the view opens on; null shows every tool's database.
+  const [databaseFor, setDatabaseFor] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [newToolOpen, setNewToolOpen] = useState(false)
+  const [toolOrder, setToolOrder] = useState<string[]>(loadToolOrder)
+  const [dragId, setDragId] = useState<string | null>(null)
+  const [dropId, setDropId] = useState<string | null>(null)
   // Thread whose generated change is open in the review dialog.
   const [reviewKey, setReviewKey] = useState<string | null>(null)
 
@@ -43,6 +49,7 @@ export function App() {
   }, [])
 
   const activeTool = tools.find((tool) => tool.id === activeToolId) ?? null
+  const sortedTools = applyToolOrder(tools, toolOrder)
   // In edit mode the chat talks to the selected tool only; otherwise it talks about new tools.
   const threadKey = editing && activeTool ? activeTool.id : NEW_TOOL_THREAD
   const thread = threads[threadKey] ?? EMPTY_THREAD
@@ -58,6 +65,18 @@ export function App() {
 
   function addMessage(key: string, message: Message) {
     updateThread(key, (current) => ({ ...current, messages: [...current.messages, message] }))
+  }
+
+  function reorderTools(fromId: string, toId: string) {
+    const next = moveTool(sortedTools.map((tool) => tool.id), fromId, toId)
+    setToolOrder(next)
+    saveToolOrder(next)
+  }
+
+  function moveByKeyboard(id: string, delta: number) {
+    const ids = sortedTools.map((tool) => tool.id)
+    const target = ids[ids.indexOf(id) + delta]
+    if (target) reorderTools(id, target)
   }
 
   function openTool(id: string) {
@@ -216,14 +235,45 @@ export function App() {
           <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tools</p>
           {tools.length === 0 && <p className="px-2 text-sm text-muted-foreground">No tools yet.</p>}
           <ul className="space-y-1">
-            {tools.map((tool) => {
+            {sortedTools.map((tool) => {
               const active = tool.id === activeToolId
               return (
-                <li key={tool.id}>
+                <li
+                  key={tool.id}
+                  draggable
+                  onDragStart={(event) => {
+                    setDragId(tool.id)
+                    event.dataTransfer.effectAllowed = 'move'
+                    event.dataTransfer.setData('text/plain', tool.id)
+                  }}
+                  onDragOver={(event) => {
+                    if (!dragId) return
+                    event.preventDefault()
+                    setDropId(tool.id)
+                  }}
+                  onDragLeave={() => setDropId(null)}
+                  onDrop={(event) => {
+                    event.preventDefault()
+                    if (dragId) reorderTools(dragId, tool.id)
+                    setDragId(null)
+                    setDropId(null)
+                  }}
+                  onDragEnd={() => {
+                    setDragId(null)
+                    setDropId(null)
+                  }}
+                  className={cn('rounded-xl', dropId === tool.id && dragId !== tool.id && 'ring-2 ring-primary/50')}
+                >
                   <button
                     type="button"
+                    title="Drag to reorder, or use Alt and the arrow keys"
                     aria-current={active ? 'page' : undefined}
                     onClick={() => openTool(tool.id)}
+                    onKeyDown={(event) => {
+                      if (!event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return
+                      event.preventDefault()
+                      moveByKeyboard(tool.id, event.key === 'ArrowUp' ? -1 : 1)
+                    }}
                     className={cn(
                       'group flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left text-sm transition-colors',
                       active
@@ -265,7 +315,13 @@ export function App() {
               </span>
             )}
             <h1 className="truncate text-sm font-medium">
-              {databaseOpen ? 'Database' : activeTool ? activeTool.name : 'New tool'}
+              {databaseOpen
+                ? databaseFor
+                  ? `${tools.find((tool) => tool.id === databaseFor)?.name ?? databaseFor} database`
+                  : 'Database'
+                : activeTool
+                  ? activeTool.name
+                  : 'New tool'}
             </h1>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -274,6 +330,10 @@ export function App() {
                 editing={editing}
                 onEdit={() => setEditing((current) => !current)}
                 onDelete={() => void uninstall()}
+                onViewDatabase={() => {
+                  setDatabaseFor(activeTool.id)
+                  setDatabaseOpen(true)
+                }}
               />
             )}
             {databaseOpen && (
@@ -285,7 +345,7 @@ export function App() {
         </header>
 
         {databaseOpen ? (
-          <DatabaseView />
+          <DatabaseView key={databaseFor ?? 'all'} packageId={databaseFor} />
         ) : activeTool ? (
           <div className="flex min-h-0 flex-1 flex-col">
             <div className={cn('flex min-h-0 flex-1', editing && 'bg-gradient-to-br from-[#5b5bf0] via-[#8b5cf6] to-[#e65bd6] p-1.5')}>
@@ -336,7 +396,10 @@ export function App() {
         />
       )}
       {settingsOpen && (
-        <SettingsDialog onClose={() => setSettingsOpen(false)} onOpenDatabase={() => setDatabaseOpen(true)} />
+        <SettingsDialog onClose={() => setSettingsOpen(false)} onOpenDatabase={() => {
+            setDatabaseFor(null)
+            setDatabaseOpen(true)
+          }} />
       )}
       {newToolOpen && <NewToolDialog onClose={() => setNewToolOpen(false)} onCreate={createTool} />}
     </div>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Ellipsis, Pencil, Trash2 } from 'lucide-react'
+import { Database, Ellipsis, Pencil, Trash2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 
@@ -7,9 +7,10 @@ interface ToolActionsProps {
   editing: boolean
   onEdit: () => void
   onDelete: () => void
+  onViewDatabase: () => void
 }
 
-export function ToolActions({ editing, onEdit, onDelete }: ToolActionsProps) {
+export function ToolActions({ editing, onEdit, onDelete, onViewDatabase }: ToolActionsProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -49,7 +50,19 @@ export function ToolActions({ editing, onEdit, onDelete }: ToolActionsProps) {
           <Ellipsis />
         </Button>
         {menuOpen && (
-          <div role="menu" className="panel absolute right-0 top-full z-20 mt-2 w-40 p-1 shadow-lg">
+          <div role="menu" className="panel absolute right-0 top-full z-20 mt-2 w-44 p-1 shadow-lg">
+            <button
+              type="button"
+              role="menuitem"
+              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent"
+              onClick={() => {
+                setMenuOpen(false)
+                onViewDatabase()
+              }}
+            >
+              <Database className="size-4" />
+              View database
+            </button>
             <button
               type="button"
               role="menuitem"
