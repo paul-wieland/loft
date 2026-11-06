@@ -10,7 +10,7 @@ interface ToolCall {
   args: { collection: string; id?: unknown; data?: unknown }
 }
 
-export function ToolView({ manifest }: { manifest: PackageManifest }) {
+export function ToolView({ manifest, onDataChanged }: { manifest: PackageManifest; onDataChanged?: () => void }) {
   const frameRef = useRef<HTMLIFrameElement>(null)
   const { dark } = useTheme()
 
@@ -36,6 +36,8 @@ export function ToolView({ manifest }: { manifest: PackageManifest }) {
         op: call.op as 'list',
         args: call.args,
       })
+
+      if (result.ok && (call.op === 'insert' || call.op === 'update' || call.op === 'remove')) onDataChanged?.()
 
       frame.contentWindow?.postMessage(
         {

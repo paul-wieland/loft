@@ -4,10 +4,11 @@ import { extname, join, resolve, sep } from 'node:path'
 
 import { isValidPackageId } from '../../domain/package/package-id'
 import { DESIGN_TOKENS_CSS } from './design-tokens'
-import { HOST_BRIDGE_SOURCE } from './host-bridge'
+import { CARD_BRIDGE_SOURCE, HOST_BRIDGE_SOURCE } from './host-bridge'
 
 const BRIDGE_PATH = '__workplace/bridge.js'
 const TOKENS_PATH = '__workplace/tokens.css'
+const CARD_BRIDGE_PATH = '__workplace/card-bridge.js'
 
 export const PACKAGE_SCHEME = 'workplace-pkg'
 
@@ -38,6 +39,8 @@ export function servePackages(packagesRoot: string): void {
 
     if (relativePath === 'index.html') return wrapperPage(packageId, packageDir)
     if (relativePath === BRIDGE_PATH) return script(HOST_BRIDGE_SOURCE)
+    if (relativePath === CARD_BRIDGE_PATH) return script(CARD_BRIDGE_SOURCE)
+    if (relativePath === 'card.html') return cardPage(packageId, packageDir)
     if (relativePath === TOKENS_PATH) return stylesheet(DESIGN_TOKENS_CSS)
 
     const file = resolve(packageDir, relativePath)
@@ -72,6 +75,34 @@ async function wrapperPage(packageId: string, packageDir: string): Promise<Respo
   <body>
     <script src="${BRIDGE_PATH}"></script>
     <script type="module" src="ui/index.js"></script>
+  </body>
+</html>`
+
+  return new Response(html, {
+    headers: {
+      'content-type': 'text/html',
+      'content-security-policy': `default-src 'none'; script-src ${origin}; style-src ${origin} 'unsafe-inline'`,
+    },
+  })
+}
+
+async function cardPage(packageId: string, packageDir: string): Promise<Response> {
+  if (!(await exists(join(packageDir, 'ui', 'card.js')))) return notFound()
+
+  const origin = `${PACKAGE_SCHEME}://${packageId}`
+  const hasStyles = await exists(join(packageDir, 'ui', 'card.css'))
+
+  const html = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="${TOKENS_PATH}" />
+    ${hasStyles ? '<link rel="stylesheet" href="ui/card.css" />' : ''}
+  </head>
+  <body>
+    <script src="${CARD_BRIDGE_PATH}"></script>
+    <script type="module" src="ui/card.js"></script>
   </body>
 </html>`
 

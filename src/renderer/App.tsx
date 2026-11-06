@@ -48,6 +48,8 @@ export function App() {
   const [dropId, setDropId] = useState<string | null>(null)
   // Thread whose generated change is open in the review dialog.
   const [reviewKey, setReviewKey] = useState<string | null>(null)
+  // Bumped when a tool writes data, so its home card reloads.
+  const [dataRevisions, setDataRevisions] = useState<Record<string, number>>({})
 
   useEffect(() => {
     void refreshTools()
@@ -96,6 +98,10 @@ export function App() {
     setHomeOpen(false)
     setEditing(false)
     setDatabaseOpen(false)
+  }
+
+  function dataChanged(packageId: string) {
+    setDataRevisions((current) => ({ ...current, [packageId]: (current[packageId] ?? 0) + 1 }))
   }
 
   function openHome() {
@@ -150,13 +156,16 @@ export function App() {
     await generate(threadKey, text, text, editing && activeTool ? activeTool.id : undefined)
   }
 
-  function createTool(name: string, description: string) {
+  function createTool(name: string, description: string, withCard: boolean) {
     setNewToolOpen(false)
     openNewTool()
+    const card = withCard
+      ? '\nAlso give it a home card: add "homeCard": {"size": "small"} to manifest.json and write ui/card.js.'
+      : ''
     void generate(
       NEW_TOOL_THREAD,
       `New tool "${name}": ${description}`,
-      `Name the tool "${name}".\n${description}`,
+      `Name the tool "${name}".\n${description}${card}`,
     )
   }
 
@@ -388,7 +397,7 @@ export function App() {
           <div className="flex min-h-0 flex-1 flex-col">
             <div className={cn('flex min-h-0 flex-1', editing && 'bg-gradient-to-br from-[#5b5bf0] via-[#8b5cf6] to-[#e65bd6] p-1.5')}>
               <div className="flex min-h-0 flex-1 overflow-hidden rounded-[14px] bg-background">
-                <ToolView key={`${activeTool.id}:${revision}`} manifest={activeTool} />
+                <ToolView key={`${activeTool.id}:${revision}`} manifest={activeTool} onDataChanged={() => dataChanged(activeTool.id)} />
               </div>
             </div>
             {editing && (
@@ -411,6 +420,9 @@ export function App() {
         ) : homeOpen && startPage.enabled ? (
           <StartPage
             locations={startPage.locations}
+            cards={sortedTools.filter((tool) => tool.homeCard)}
+            dataRevisions={dataRevisions}
+            onOpenTool={openTool}
             onLocationsChange={(locations) => changeStartPage({ ...startPage, locations })}
             onNewTool={() => setNewToolOpen(true)}
           />

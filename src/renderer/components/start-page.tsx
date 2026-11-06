@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSun, Info, MapPin, Plus, Snowflake, Sun, X, type LucideIcon } from 'lucide-react'
 
+import type { PackageManifest } from '../../domain/package/manifest'
 import { MAX_LOCATIONS, nearestCity, needsTimezone, type StartPageLocation } from '@/lib/start-page-settings'
 import { describeWeather, fetchCurrentWeather, searchCities, type CurrentWeather, type WeatherIcon } from '@/lib/weather'
 import { AddCityDialog } from '@/components/add-city-dialog'
+import { HomeCards } from '@/components/home-cards'
 import { Button } from '@/components/ui/button'
 
 const WEATHER_ICONS: Record<WeatherIcon, LucideIcon> = {
@@ -23,9 +25,12 @@ interface StartPageProps {
   locations: StartPageLocation[]
   onLocationsChange: (locations: StartPageLocation[]) => void
   onNewTool: () => void
+  cards: PackageManifest[]
+  dataRevisions: Record<string, number>
+  onOpenTool: (id: string) => void
 }
 
-export function StartPage({ locations, onLocationsChange, onNewTool }: StartPageProps) {
+export function StartPage({ locations, onLocationsChange, onNewTool, cards, dataRevisions, onOpenTool }: StartPageProps) {
   const [now, setNow] = useState(() => new Date())
   const [addingCity, setAddingCity] = useState(false)
   const [showSource, setShowSource] = useState(false)
@@ -141,6 +146,8 @@ export function StartPage({ locations, onLocationsChange, onNewTool }: StartPage
           ))}
         </div>
       )}
+
+      <HomeCards tools={cards} revisions={dataRevisions} onOpenTool={onOpenTool} />
 
       {addingCity && (
         <AddCityDialog

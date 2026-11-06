@@ -52,6 +52,10 @@ export class ValidateStagedPackage {
       errors.push(`entry file "${manifest.value.entry}" is missing`)
     }
 
+    if (manifest.value.homeCard && !(await this.staging.exists(requestId, 'ui/card.js'))) {
+      errors.push('homeCard is set but ui/card.js is missing')
+    }
+
     const schemaText = await this.staging.readFile(requestId, 'schema.json')
     if (schemaText !== null) {
       const schemaJson = parseJson(schemaText)

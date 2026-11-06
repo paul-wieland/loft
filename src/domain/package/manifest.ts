@@ -7,6 +7,12 @@ export const CONTRACT_VERSION = 1
 
 const SEMVER = /^\d+\.\d+\.\d+$/
 
+export type HomeCardSize = 'small' | 'wide'
+
+export interface HomeCard {
+  size: HomeCardSize
+}
+
 export interface PackageManifest {
   id: string
   name: string
@@ -16,13 +22,14 @@ export interface PackageManifest {
   entry: string
   permissions: Permission[]
   contractVersion: number
+  homeCard?: HomeCard
 }
 
 export function validateManifest(raw: unknown, folderName: string): Result<PackageManifest, string[]> {
   if (!isRecord(raw)) return err(['manifest must be a JSON object'])
 
   const errors: string[] = []
-  const { id, name, version, icon, description, entry, permissions, contractVersion } = raw
+  const { id, name, version, icon, description, entry, permissions, contractVersion, homeCard } = raw
 
   if (typeof id !== 'string' || !isValidPackageId(id)) {
     errors.push('id must be kebab-case, 3 to 40 characters')
@@ -63,6 +70,10 @@ export function validateManifest(raw: unknown, folderName: string): Result<Packa
     errors.push(`contractVersion ${contractVersion} is newer than supported version ${CONTRACT_VERSION}`)
   }
 
+  if (homeCard !== undefined && !isHomeCard(homeCard)) {
+    errors.push('homeCard must be { "size": "small" | "wide" }')
+  }
+
   if (errors.length > 0) return err(errors)
 
   return ok({
@@ -74,6 +85,7 @@ export function validateManifest(raw: unknown, folderName: string): Result<Packa
     entry: entry as string,
     permissions: permissions as Permission[],
     contractVersion: contractVersion as number,
+    homeCard: homeCard as HomeCard | undefined,
   })
 }
 
@@ -84,4 +96,8 @@ function isSafeRelativePath(path: string): boolean {
     !path.includes('\\') &&
     !path.split('/').includes('..')
   )
+}
+
+function isHomeCard(value: unknown): value is HomeCard {
+  return isRecord(value) && (value.size === 'small' || value.size === 'wide')
 }

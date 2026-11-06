@@ -1,0 +1,104 @@
+import { useEffect, useRef, useState } from 'react'
+
+import type { PackageManifest } from '../../domain/package/manifest'
+import { ToolIcon } from '@/components/tool-icon'
+import { useTheme } from '@/components/theme-provider'
+import { cn } from '@/lib/utils'
+
+const LOAD_TIMEOUT_MS = 8000
+
+interface HomeCardsProps {
+  tools: PackageManifest[]
+  revisions: Record<string, number>
+  onOpenTool: (id: string) => void
+}
+
+// Each card runs in its own sandboxed frame. It is rebuilt when its tool's data changes, so it never shows stale numbers.
+export function HomeCards({ tools, revisions, onOpenTool }: HomeCardsProps) {
+  if (tools.length === 0) return null
+  return (
+    <div className="grid w-full max-w-2xl gap-2 sm:grid-cols-2">
+      {tools.map((tool) => (
+        <HomeCard key={`${tool.id}:${revisions[tool.id] ?? 0}`} tool={tool} onOpen={() => onOpenTool(tool.id)} />
+      ))}
+    </div>
+  )
+}
+
+function HomeCard({ tool, onOpen }: { tool: PackageManifest; onOpen: () => void }) {
+  const frameRef = useRef<HTMLIFrameElement>(null)
+  const loadedRef = useRef(false)
+  const [failed, setFailed] = useState(false)
+  const { dark } = useTheme()
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      if (!loadedRef.current) setFailed(true)
+    }, LOAD_TIMEOUT_MS)
+    return () => window.clearTimeout(timeout)
+  }, [])
+
+  useEffect(() => {
+    async function onMessage(event: MessageEvent) {
+      const frame = frameRef.current
+      if (!frame || event.source !== frame.contentWindow) return
+      const message = event.data as Record<string, unknown> | null
+      if (!message || typeof message !== 'object') return
+
+      if (message.type === 'workplace:ready') {
+        loadedRef.current = true
+        frame.contentWindow?.postMessage({ type: 'workplace:theme', dark }, '*')
+        return
+      }
+      if (message.type === 'workplace:open') {
+        onOpen()
+        return
+      }
+      if (message.type !== 'workplace:call' || typeof message.id !== 'number' || typeof message.op !== 'string') return
+
+      const id: number = message.id
+      const op = message.op
+      const reply = (ok: boolean, value?: unknown, error?: string) =>
+        frame.contentWindow?.postMessage({ type: 'workplace:result', id, ok, value, error }, '*')
+
+      // Cards are read-only: only list and get reach the store.
+      if (op !== 'list' && op !== 'get') {
+        reply(false, undefined, 'Cards can only read data')
+        return
+      }
+      const result = await window.workplace.store.call({
+        packageId: tool.id,
+        op: op as 'list',
+        args: message.args as { collection: string },
+      })
+      reply(result.ok, result.ok ? result.value : undefined, result.ok ? undefined : result.error)
+    }
+
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [tool.id, dark, onOpen])
+
+  return (
+    <div className={cn('panel flex min-w-0 flex-col overflow-hidden', tool.homeCard?.size === 'wide' && 'sm:col-span-2')}>
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex items-center gap-2 px-3 py-2 text-left text-xs font-medium hover:bg-accent"
+      >
+        <ToolIcon name={tool.icon} className="size-3.5" />
+        <span className="truncate">{tool.name}</span>
+      </button>
+      {failed ? (
+        <p className="px-3 pb-3 text-xs text-muted-foreground">This card did not load.</p>
+      ) : (
+        <iframe
+          ref={frameRef}
+          title={`${tool.name} card`}
+          src={`workplace-pkg://${tool.id}/card.html`}
+          sandbox="allow-scripts"
+          className="h-24 w-full border-0"
+        />
+      )}
+    </div>
+  )
+}
