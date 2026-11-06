@@ -31,15 +31,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(readStoredTheme)
 
   useEffect(() => {
-    // Follow theme changes made in another window, such as the settings window.
-    const onStorage = (event: StorageEvent) => {
-      if (event.key === STORAGE_KEY) setThemeState(readStoredTheme())
-    }
-    window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
-  }, [])
-
-  useEffect(() => {
     applyTheme(theme)
     if (theme !== 'system') return
 

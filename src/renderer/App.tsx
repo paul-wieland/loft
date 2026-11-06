@@ -5,6 +5,7 @@ import type { Review } from '../application/generation/get-review'
 import type { PackageManifest } from '../domain/package/manifest'
 import { DatabaseView } from '@/components/database-view'
 import { ReviewPanel } from '@/components/review-panel'
+import { SettingsDialog } from '@/components/settings-dialog'
 import { ToolView } from '@/components/tool-view'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,6 +19,7 @@ export function App() {
   const [draft, setDraft] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [databaseOpen, setDatabaseOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [tools, setTools] = useState<PackageManifest[]>([])
   const [activeToolId, setActiveToolId] = useState<string | null>(null)
   const [review, setReview] = useState<Review | null>(null)
@@ -27,8 +29,6 @@ export function App() {
   useEffect(() => {
     void refreshTools()
   }, [])
-
-  useEffect(() => window.workplace.windows.onDatabaseRequested(() => setDatabaseOpen(true)), [])
 
   const activeTool = tools.find((tool) => tool.id === activeToolId) ?? null
 
@@ -151,7 +151,7 @@ export function App() {
           ))}
         </nav>
         <div className="border-t p-3">
-          <Button variant="ghost" className="w-full justify-start" onClick={() => void window.workplace.windows.openSettings()}>
+          <Button variant="ghost" className="w-full justify-start" aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
             <Settings />
             Settings
           </Button>
@@ -232,6 +232,13 @@ export function App() {
         </section>
         )}
       </main>
+
+      {settingsOpen && (
+        <SettingsDialog
+          onClose={() => setSettingsOpen(false)}
+          onOpenDatabase={() => setDatabaseOpen(true)}
+        />
+      )}
     </div>
   )
 }
