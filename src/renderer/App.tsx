@@ -411,8 +411,8 @@ export function App() {
         ) : homeOpen && startPage.enabled ? (
           <StartPage
             locations={startPage.locations}
+            onLocationsChange={(locations) => changeStartPage({ ...startPage, locations })}
             onNewTool={() => setNewToolOpen(true)}
-            onOpenSettings={() => setSettingsOpen(true)}
           />
         ) : (
           <ChatPanel

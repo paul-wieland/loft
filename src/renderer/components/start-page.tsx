@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSun, MapPin, Plus, Snowflake, Sun, type LucideIcon } from 'lucide-react'
+import { Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSun, MapPin, Plus, Snowflake, Sun, X, type LucideIcon } from 'lucide-react'
 
-import type { StartPageLocation } from '@/lib/start-page-settings'
+import { MAX_LOCATIONS, type StartPageLocation } from '@/lib/start-page-settings'
 import { describeWeather, fetchCurrentWeather, type CurrentWeather, type WeatherIcon } from '@/lib/weather'
+import { AddCityDialog } from '@/components/add-city-dialog'
 import { Button } from '@/components/ui/button'
 
 const WEATHER_ICONS: Record<WeatherIcon, LucideIcon> = {
@@ -20,12 +21,13 @@ const REFRESH_MS = 30 * 60 * 1000
 
 interface StartPageProps {
   locations: StartPageLocation[]
+  onLocationsChange: (locations: StartPageLocation[]) => void
   onNewTool: () => void
-  onOpenSettings: () => void
 }
 
-export function StartPage({ locations, onNewTool, onOpenSettings }: StartPageProps) {
+export function StartPage({ locations, onLocationsChange, onNewTool }: StartPageProps) {
   const [now, setNow] = useState(() => new Date())
+  const [addingCity, setAddingCity] = useState(false)
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(new Date()), 1000)
@@ -37,37 +39,52 @@ export function StartPage({ locations, onNewTool, onOpenSettings }: StartPagePro
   const date = now.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-8 overflow-y-auto p-8 text-center">
+    <div className="flex min-h-0 flex-1 flex-col items-start gap-6 overflow-y-auto p-8 text-left">
       <div>
         <p className="text-sm font-medium text-muted-foreground">{greeting}</p>
-        <p className="mt-2 text-lg text-muted-foreground">{date}</p>
+        <p className="mt-1 text-lg text-muted-foreground">{date}</p>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {locations.length < MAX_LOCATIONS && (
+          <Button variant="outline" onClick={() => setAddingCity(true)}>
+            <Plus />
+            Add city
+          </Button>
+        )}
+        <Button variant="outline" onClick={onNewTool}>
+          <Plus />
+          New tool
+        </Button>
       </div>
 
       {locations.length === 0 ? (
-        <div className="panel flex w-full max-w-sm flex-col items-center gap-3 p-5">
-          <p className="text-sm text-muted-foreground">Choose cities in Settings to see their time and weather.</p>
-          <Button variant="outline" size="sm" onClick={onOpenSettings}>
-            <MapPin />
-            Choose cities
-          </Button>
-        </div>
+        <p className="text-sm text-muted-foreground">Add a city to see its time and weather.</p>
       ) : (
         <div className="grid w-full max-w-3xl gap-4 sm:grid-cols-2">
-          {locations.map((location) => (
-            <CityCard key={`${location.name}-${location.latitude}-${location.longitude}`} location={location} now={now} />
+          {locations.map((location, index) => (
+            <CityCard
+              key={`${location.name}-${location.latitude}-${location.longitude}`}
+              location={location}
+              now={now}
+              onRemove={() => onLocationsChange(locations.filter((_, position) => position !== index))}
+            />
           ))}
         </div>
       )}
 
-      <Button variant="outline" onClick={onNewTool}>
-        <Plus />
-        New tool
-      </Button>
+      {addingCity && (
+        <AddCityDialog
+          locations={locations}
+          onAdd={(place) => onLocationsChange([...locations, place])}
+          onClose={() => setAddingCity(false)}
+        />
+      )}
     </div>
   )
 }
 
-function CityCard({ location, now }: { location: StartPageLocation; now: Date }) {
+function CityCard({ location, now, onRemove }: { location: StartPageLocation; now: Date; onRemove: () => void }) {
   const [weather, setWeather] = useState<CurrentWeather | null>(null)
   const [weatherError, setWeatherError] = useState<string | null>(null)
 
@@ -99,17 +116,20 @@ function CityCard({ location, now }: { location: StartPageLocation; now: Date })
   const day = now.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', timeZone: location.timezone })
 
   return (
-    <div className="panel flex flex-col gap-3 p-5 text-left">
-      <div className="flex items-center justify-between gap-2">
-        <p className="flex min-w-0 items-center gap-1.5 text-sm font-medium">
-          <MapPin className="size-3.5 shrink-0" />
-          <span className="truncate">{location.name}</span>
-        </p>
-        <p className="shrink-0 text-xs text-muted-foreground">{day}</p>
+    <div className="panel relative flex flex-col gap-3 p-5 text-left">
+      <Button variant="ghost" size="icon" className="absolute right-2 top-2 size-7" aria-label={`Remove ${location.name}`} title="Remove city" onClick={onRemove}>
+        <X className="size-4" />
+      </Button>
+      <div className="flex min-w-0 items-center gap-1.5 pr-8 text-sm font-medium">
+        <MapPin className="size-3.5 shrink-0" />
+        <span className="truncate">{location.name}</span>
       </div>
-      <p className="bg-gradient-to-r from-[#5b5bf0] to-[#e65bd6] bg-clip-text text-4xl font-semibold tabular-nums text-transparent">
-        {time}
-      </p>
+      <div>
+        <p className="bg-gradient-to-r from-[#5b5bf0] to-[#e65bd6] bg-clip-text text-4xl font-semibold tabular-nums text-transparent">
+          {time}
+        </p>
+        <p className="text-xs text-muted-foreground">{day}</p>
+      </div>
       {weatherError ? (
         <p className="text-sm text-muted-foreground">{weatherError}</p>
       ) : !weather ? (
