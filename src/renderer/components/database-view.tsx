@@ -52,21 +52,23 @@ export function DatabaseView({ packageId }: { packageId?: string | null }) {
       </div>
 
       <div className="flex min-h-0 flex-1">
-        <aside className="w-56 shrink-0 space-y-1 overflow-y-auto border-r p-3">
-          <p className="px-2 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Databases</p>
-          {databases.length === 0 && <p className="px-2 text-sm text-muted-foreground">No databases yet.</p>}
-          {databases.map((name) => (
-            <Button
-              key={name}
-              variant={name === selected ? 'outline' : 'ghost'}
-              size="sm"
-              className="w-full justify-start truncate"
-              onClick={() => void openDatabase(name)}
-            >
-              {name}
-            </Button>
-          ))}
-        </aside>
+        {!packageId && (
+          <aside className="w-56 shrink-0 space-y-1 overflow-y-auto border-r p-3">
+            <p className="px-2 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Databases</p>
+            {databases.length === 0 && <p className="px-2 text-sm text-muted-foreground">No databases yet.</p>}
+            {databases.map((name) => (
+              <Button
+                key={name}
+                variant={name === selected ? 'outline' : 'ghost'}
+                size="sm"
+                className="w-full justify-start truncate"
+                onClick={() => void openDatabase(name)}
+              >
+                {name}
+              </Button>
+            ))}
+          </aside>
+        )}
 
         <aside className="w-48 shrink-0 space-y-1 overflow-y-auto border-r p-3">
           <p className="px-2 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Tables</p>
