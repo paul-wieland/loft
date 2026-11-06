@@ -410,7 +410,7 @@ export function App() {
           </div>
         ) : homeOpen && startPage.enabled ? (
           <StartPage
-            location={startPage.location}
+            locations={startPage.locations}
             onNewTool={() => setNewToolOpen(true)}
             onOpenSettings={() => setSettingsOpen(true)}
           />

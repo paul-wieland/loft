@@ -1,28 +1,44 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_START_PAGE, parseStartPageSettings } from '../../src/renderer/lib/start-page-settings'
+import { DEFAULT_START_PAGE, MAX_LOCATIONS, parseStartPageSettings } from '../../src/renderer/lib/start-page-settings'
 import { describeWeather } from '../../src/renderer/lib/weather'
 
 describe('start page settings', () => {
-  it('is on by default with no location', () => {
+  it('is on by default with no cities', () => {
     expect(parseStartPageSettings(null)).toEqual(DEFAULT_START_PAGE)
-    expect(DEFAULT_START_PAGE.enabled).toBe(true)
+    expect(DEFAULT_START_PAGE).toEqual({ enabled: true, locations: [] })
   })
 
   it('falls back to the defaults for broken stored values', () => {
     expect(parseStartPageSettings('not json')).toEqual(DEFAULT_START_PAGE)
   })
 
-  it('keeps a valid saved location and the off switch', () => {
-    const saved = JSON.stringify({ enabled: false, location: { name: 'Berlin', latitude: 52.5, longitude: 13.4 } })
+  it('keeps several saved cities with their time zones and the off switch', () => {
+    const saved = JSON.stringify({
+      enabled: false,
+      locations: [
+        { name: 'Berlin', latitude: 52.5, longitude: 13.4, timezone: 'Europe/Berlin' },
+        { name: 'Tokyo', latitude: 35.7, longitude: 139.7, timezone: 'Asia/Tokyo' },
+      ],
+    })
     expect(parseStartPageSettings(saved)).toEqual({
       enabled: false,
-      location: { name: 'Berlin', latitude: 52.5, longitude: 13.4 },
+      locations: [
+        { name: 'Berlin', latitude: 52.5, longitude: 13.4, timezone: 'Europe/Berlin' },
+        { name: 'Tokyo', latitude: 35.7, longitude: 139.7, timezone: 'Asia/Tokyo' },
+      ],
     })
   })
 
-  it('drops a location with missing coordinates', () => {
-    const saved = JSON.stringify({ enabled: true, location: { name: 'Berlin' } })
-    expect(parseStartPageSettings(saved).location).toBeNull()
+  it('reads an older single city and drops entries with missing coordinates', () => {
+    const older = JSON.stringify({ enabled: true, location: { name: 'Berlin', latitude: 52.5, longitude: 13.4 } })
+    expect(parseStartPageSettings(older).locations).toEqual([{ name: 'Berlin', latitude: 52.5, longitude: 13.4, timezone: undefined }])
+    const broken = JSON.stringify({ enabled: true, locations: [{ name: 'Berlin' }] })
+    expect(parseStartPageSettings(broken).locations).toEqual([])
+  })
+
+  it('keeps at most the maximum number of cities', () => {
+    const many = Array.from({ length: MAX_LOCATIONS + 2 }, (_, index) => ({ name: `City ${index}`, latitude: index, longitude: index }))
+    expect(parseStartPageSettings(JSON.stringify({ enabled: true, locations: many })).locations).toHaveLength(MAX_LOCATIONS)
   })
 })
 

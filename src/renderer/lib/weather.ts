@@ -11,6 +11,7 @@ export interface CitySuggestion {
   country: string | null
   latitude: number
   longitude: number
+  timezone: string | null
 }
 
 export async function fetchCurrentWeather(latitude: number, longitude: number): Promise<CurrentWeather> {
@@ -38,13 +39,14 @@ export async function searchCities(query: string): Promise<CitySuggestion[]> {
   const response = await fetch(url)
   if (!response.ok) throw new Error(`city search returned ${response.status}`)
   const body = (await response.json()) as {
-    results?: { name: string; country?: string; latitude: number; longitude: number }[]
+    results?: { name: string; country?: string; latitude: number; longitude: number; timezone?: string }[]
   }
   return (body.results ?? []).map((place) => ({
     name: place.name,
     country: place.country ?? null,
     latitude: place.latitude,
     longitude: place.longitude,
+    timezone: place.timezone ?? null,
   }))
 }
 
