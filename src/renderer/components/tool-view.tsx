@@ -1,0 +1,59 @@
+import { useEffect, useRef } from 'react'
+
+import type { PackageManifest } from '../../domain/package/manifest'
+
+interface ToolCall {
+  type: 'workplace:call'
+  id: number
+  op: string
+  args: { collection: string; id?: unknown; data?: unknown }
+}
+
+export function ToolView({ manifest }: { manifest: PackageManifest }) {
+  const frameRef = useRef<HTMLIFrameElement>(null)
+
+  useEffect(() => {
+    async function onMessage(event: MessageEvent) {
+      const frame = frameRef.current
+      if (!frame || event.source !== frame.contentWindow || !isToolCall(event.data)) return
+
+      const call = event.data
+      const result = await window.workplace.store.call({
+        packageId: manifest.id,
+        op: call.op as 'list',
+        args: call.args,
+      })
+
+      frame.contentWindow?.postMessage(
+        {
+          type: 'workplace:result',
+          id: call.id,
+          ok: result.ok,
+          value: result.ok ? result.value : undefined,
+          error: result.ok ? undefined : result.error,
+        },
+        '*',
+      )
+    }
+
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [manifest.id])
+
+  return (
+    <iframe
+      ref={frameRef}
+      key={manifest.id}
+      title={manifest.name}
+      src={`workplace-pkg://${manifest.id}/`}
+      sandbox="allow-scripts allow-forms allow-modals"
+      className="h-full w-full flex-1 border-0 bg-background"
+    />
+  )
+}
+
+function isToolCall(value: unknown): value is ToolCall {
+  if (typeof value !== 'object' || value === null) return false
+  const message = value as Record<string, unknown>
+  return message.type === 'workplace:call' && typeof message.id === 'number' && typeof message.op === 'string'
+}
