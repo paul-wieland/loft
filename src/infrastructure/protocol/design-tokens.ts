@@ -6,7 +6,7 @@ export const DESIGN_TOKENS_CSS = `:root{
   --radius-panel:16px;--radius-control:11px;--shadow-panel:0 10px 30px -10px rgba(30,30,70,.25),0 2px 6px rgba(30,30,70,.06);
   --on-accent:#ffffff;
 }
-.dark{
+:root.dark{
   --bg:#111327;--dot:#2f3557;--ui:#1a1d35;--ink:#eef0fa;--muted:#9aa0bc;--accent:#8b8bff;--accent-soft:#232743;--line:#2a2f4d;
   --danger:#ff6b7d;--shadow-panel:0 10px 30px -10px rgba(0,0,0,.6),0 2px 6px rgba(0,0,0,.3);--on-accent:#111327;
 }
