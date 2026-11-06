@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSun, MapPin, Plus, Snowflake, Sun, X, type LucideIcon } from 'lucide-react'
 
-import { MAX_LOCATIONS, type StartPageLocation } from '@/lib/start-page-settings'
-import { describeWeather, fetchCurrentWeather, type CurrentWeather, type WeatherIcon } from '@/lib/weather'
+import { MAX_LOCATIONS, nearestCity, needsTimezone, type StartPageLocation } from '@/lib/start-page-settings'
+import { describeWeather, fetchCurrentWeather, searchCities, type CurrentWeather, type WeatherIcon } from '@/lib/weather'
 import { AddCityDialog } from '@/components/add-city-dialog'
 import { Button } from '@/components/ui/button'
 
@@ -34,6 +34,27 @@ export function StartPage({ locations, onLocationsChange, onNewTool }: StartPage
     return () => window.clearInterval(id)
   }, [])
 
+  // Cities saved without a time zone get one from the city search, so their time is right.
+  useEffect(() => {
+    const index = locations.findIndex(needsTimezone)
+    const place = index < 0 ? undefined : locations[index]
+    if (!place) return
+    let cancelled = false
+    searchCities((place.name.split(',')[0] ?? place.name).trim()).then(
+      (found) => {
+        const match = nearestCity(found, place.latitude, place.longitude)
+        if (cancelled || !match?.timezone) return
+        onLocationsChange(
+          locations.map((saved, position) => (position === index ? { ...saved, timezone: match.timezone ?? undefined } : saved)),
+        )
+      },
+      () => undefined,
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [locations, onLocationsChange])
+
   const hour = now.getHours()
   const greeting = hour < 5 ? 'Good night' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
   const date = now.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' })
@@ -61,7 +82,7 @@ export function StartPage({ locations, onLocationsChange, onNewTool }: StartPage
       {locations.length === 0 ? (
         <p className="text-sm text-muted-foreground">Add a city to see its time and weather.</p>
       ) : (
-        <div className="grid w-full max-w-3xl gap-4 sm:grid-cols-2">
+        <div className="grid w-full max-w-3xl gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {locations.map((location, index) => (
             <CityCard
               key={`${location.name}-${location.latitude}-${location.longitude}`}
@@ -116,36 +137,36 @@ function CityCard({ location, now, onRemove }: { location: StartPageLocation; no
   const day = now.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', timeZone: location.timezone })
 
   return (
-    <div className="panel relative flex flex-col gap-3 p-5 text-left">
-      <Button variant="ghost" size="icon" className="absolute right-2 top-2 size-7" aria-label={`Remove ${location.name}`} title="Remove city" onClick={onRemove}>
-        <X className="size-4" />
+    <div className="panel relative flex flex-col gap-2 p-3 text-left">
+      <Button variant="ghost" size="icon" className="absolute right-1 top-1 size-6" aria-label={`Remove ${location.name}`} title="Remove city" onClick={onRemove}>
+        <X className="size-3.5" />
       </Button>
-      <div className="flex min-w-0 items-center gap-1.5 pr-8 text-sm font-medium">
-        <MapPin className="size-3.5 shrink-0" />
+      <div className="flex min-w-0 items-center gap-1.5 pr-6 text-xs font-medium">
+        <MapPin className="size-3 shrink-0" />
         <span className="truncate">{location.name}</span>
       </div>
       <div>
-        <p className="bg-gradient-to-r from-[#5b5bf0] to-[#e65bd6] bg-clip-text text-4xl font-semibold tabular-nums text-transparent">
+        <p className="bg-gradient-to-r from-[#5b5bf0] to-[#e65bd6] bg-clip-text text-2xl font-semibold tabular-nums text-transparent">
           {time}
         </p>
-        <p className="text-xs text-muted-foreground">{day}</p>
+        <p className="text-[11px] text-muted-foreground">{day}</p>
       </div>
       {weatherError ? (
-        <p className="text-sm text-muted-foreground">{weatherError}</p>
+        <p className="text-xs text-muted-foreground">{weatherError}</p>
       ) : !weather ? (
-        <p className="text-sm text-muted-foreground">Loading weather…</p>
+        <p className="text-xs text-muted-foreground">Loading weather…</p>
       ) : (
         (() => {
           const description = describeWeather(weather.code)
           const Icon = WEATHER_ICONS[description.icon]
           return (
-            <div className="flex items-center gap-3">
-              <span className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#5b5bf0] to-[#e65bd6] text-white">
-                <Icon className="size-5" />
+            <div className="flex items-center gap-2">
+              <span className="flex size-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#5b5bf0] to-[#e65bd6] text-white">
+                <Icon className="size-3.5" />
               </span>
               <div>
-                <p className="text-xl font-semibold tabular-nums">{Math.round(weather.temperature)}°C</p>
-                <p className="text-sm text-muted-foreground">{description.label}</p>
+                <p className="text-base font-semibold tabular-nums">{Math.round(weather.temperature)}°C</p>
+                <p className="text-xs text-muted-foreground">{description.label}</p>
               </div>
             </div>
           )

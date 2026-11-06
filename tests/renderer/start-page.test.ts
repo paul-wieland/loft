@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_START_PAGE, MAX_LOCATIONS, parseStartPageSettings } from '../../src/renderer/lib/start-page-settings'
+import {
+  DEFAULT_START_PAGE,
+  MAX_LOCATIONS,
+  nearestCity,
+  needsTimezone,
+  parseStartPageSettings,
+} from '../../src/renderer/lib/start-page-settings'
 import { describeWeather } from '../../src/renderer/lib/weather'
 
 describe('start page settings', () => {
@@ -39,6 +45,23 @@ describe('start page settings', () => {
   it('keeps at most the maximum number of cities', () => {
     const many = Array.from({ length: MAX_LOCATIONS + 2 }, (_, index) => ({ name: `City ${index}`, latitude: index, longitude: index }))
     expect(parseStartPageSettings(JSON.stringify({ enabled: true, locations: many })).locations).toHaveLength(MAX_LOCATIONS)
+  })
+})
+
+describe('time zones for saved cities', () => {
+  it('asks for a time zone only for cities that have none, not for the device location', () => {
+    expect(needsTimezone({ name: 'Bangkok, Thailand', latitude: 13.7, longitude: 100.5 })).toBe(true)
+    expect(needsTimezone({ name: 'Munich', latitude: 48.1, longitude: 11.6, timezone: 'Europe/Berlin' })).toBe(false)
+    expect(needsTimezone({ name: 'My location', latitude: 0, longitude: 0 })).toBe(false)
+  })
+
+  it('picks the search result closest to the saved coordinates', () => {
+    const results = [
+      { latitude: 40.7, longitude: -74, timezone: 'America/New_York' },
+      { latitude: 13.75, longitude: 100.5, timezone: 'Asia/Bangkok' },
+    ]
+    expect(nearestCity(results, 13.7, 100.4)?.timezone).toBe('Asia/Bangkok')
+    expect(nearestCity([], 0, 0)).toBeNull()
   })
 })
 

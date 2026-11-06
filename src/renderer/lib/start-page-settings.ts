@@ -62,3 +62,27 @@ export function saveStartPageSettings(settings: StartPageSettings): void {
     // Storage can be unavailable; the choice then lasts for this session only.
   }
 }
+
+export const DEVICE_LOCATION_NAME = 'My location'
+
+// A saved city without a time zone needs one looked up; the device location uses the device's own.
+export function needsTimezone(place: StartPageLocation): boolean {
+  return !place.timezone && place.name !== DEVICE_LOCATION_NAME
+}
+
+export function nearestCity<T extends { latitude: number; longitude: number }>(
+  candidates: T[],
+  latitude: number,
+  longitude: number,
+): T | null {
+  let best: T | null = null
+  let bestDistance = Infinity
+  for (const candidate of candidates) {
+    const distance = Math.hypot(candidate.latitude - latitude, candidate.longitude - longitude)
+    if (distance < bestDistance) {
+      best = candidate
+      bestDistance = distance
+    }
+  }
+  return best
+}

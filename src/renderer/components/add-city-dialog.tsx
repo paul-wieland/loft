@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { MapPin, X } from 'lucide-react'
 
-import { MAX_LOCATIONS, type StartPageLocation } from '@/lib/start-page-settings'
+import { DEVICE_LOCATION_NAME, MAX_LOCATIONS, type StartPageLocation } from '@/lib/start-page-settings'
 import { searchCities, type CitySuggestion } from '@/lib/weather'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -48,7 +48,7 @@ export function AddCityDialog({ locations, onAdd, onClose }: AddCityDialogProps)
       return
     }
     navigator.geolocation.getCurrentPosition(
-      (position) => add({ name: 'My location', latitude: position.coords.latitude, longitude: position.coords.longitude }),
+      (position) => add({ name: DEVICE_LOCATION_NAME, latitude: position.coords.latitude, longitude: position.coords.longitude }),
       () => setMessage('Could not get your location. Search for a city instead.'),
       { timeout: 10000 },
     )
