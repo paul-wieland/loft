@@ -11,7 +11,7 @@ const api: WorkplaceApi = {
   generation: {
     start: (spec, basePackageId) => ipcRenderer.invoke(IPC.generationStart, spec, basePackageId),
     review: (requestId) => ipcRenderer.invoke(IPC.generationReview, requestId),
-    approve: (requestId, replace) => ipcRenderer.invoke(IPC.generationApprove, requestId, replace),
+    approve: (requestId, replace, icon) => ipcRenderer.invoke(IPC.generationApprove, requestId, replace, icon),
     reject: (requestId) => ipcRenderer.invoke(IPC.generationReject, requestId),
   },
   packages: {

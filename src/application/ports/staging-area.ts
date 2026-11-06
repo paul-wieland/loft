@@ -4,6 +4,7 @@ export interface StagingArea {
   exists(requestId: string, relativePath: string): Promise<boolean>
   listFiles(requestId: string): Promise<string[]>
   hasExternalSymlinks(requestId: string): Promise<boolean>
+  setIcon(requestId: string, icon: string): Promise<void>
   promote(requestId: string, packageId: string): Promise<void>
   discard(requestId: string): Promise<void>
 }

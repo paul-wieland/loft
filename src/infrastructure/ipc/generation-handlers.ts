@@ -25,9 +25,9 @@ export function registerGenerationHandlers({ start, review, approve, reject }: G
     return review.execute(requestId)
   })
 
-  ipcMain.handle(IPC.generationApprove, (_event, requestId: unknown, replace: unknown) => {
+  ipcMain.handle(IPC.generationApprove, (_event, requestId: unknown, replace: unknown, icon: unknown) => {
     if (typeof requestId !== 'string') return { ok: false, error: 'Invalid request' }
-    return approve.execute({ requestId, replace: replace === true })
+    return approve.execute({ requestId, replace: replace === true, icon: typeof icon === 'string' ? icon : undefined })
   })
 
   ipcMain.handle(IPC.generationReject, (_event, requestId: unknown) => {

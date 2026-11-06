@@ -31,7 +31,7 @@ export interface WorkplaceApi {
   generation: {
     start(spec: string, basePackageId?: string): Promise<Result<GenerationRequest, string>>
     review(requestId: string): Promise<Review | null>
-    approve(requestId: string, replace: boolean): Promise<Result<ApproveOutcome, string>>
+    approve(requestId: string, replace: boolean, icon?: string): Promise<Result<ApproveOutcome, string>>
     reject(requestId: string): Promise<Result<void, string>>
   }
   packages: {

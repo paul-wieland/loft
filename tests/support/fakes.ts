@@ -54,6 +54,7 @@ export class InMemoryRequestStore implements RequestStore {
 export class InMemoryStagingArea implements StagingArea {
   readonly promoted: string[] = []
   readonly discarded: string[] = []
+  readonly icons = new Map<string, string>()
   readonly escapingSymlinks = new Set<string>()
   readonly preparedFrom = new Map<string, string | null>()
   private readonly files = new Map<string, Map<string, string>>()
@@ -81,6 +82,10 @@ export class InMemoryStagingArea implements StagingArea {
 
   async hasExternalSymlinks(requestId: string): Promise<boolean> {
     return this.escapingSymlinks.has(requestId)
+  }
+
+  async setIcon(requestId: string, icon: string): Promise<void> {
+    this.icons.set(requestId, icon)
   }
 
   async promote(requestId: string, packageId: string): Promise<void> {

@@ -3,6 +3,7 @@ import { join, resolve, sep } from 'node:path'
 
 import type { KeyStore } from '../../application/ports/key-store'
 import type { PackageGenerator } from '../../application/ports/package-generator'
+import { TOOL_ICON_NAMES } from '../../domain/package/tool-icons'
 
 const MODEL = 'claude-sonnet-5-5'
 const ALLOWED_TOOLS = ['Read', 'Write', 'Edit', 'Glob', 'Grep']
@@ -15,7 +16,9 @@ Work only with the Read, Write, Edit, Glob and Grep tools inside your working di
   - id: the package id given in the instructions, exactly
   - name: 1 to 40 characters
   - version: "1.0.0"
-  - icon: a lucide icon name such as "check-square"
+  - icon: the best icon for the tool, chosen from the list below
+  - iconOptions: exactly three different icons from the list below, the best first, so the user can choose
+    Icons: ${TOOL_ICON_NAMES.join(", ")}
   - description: optional, at most 200 characters
   - entry: "ui/index.js"
   - permissions: [] unless the tool stores data, then ["store"]

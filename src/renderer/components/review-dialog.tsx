@@ -1,13 +1,30 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 
 import type { Review } from '../../application/generation/get-review'
+import { DEFAULT_TOOL_ICON, isToolIconName, type ToolIconName } from '../../domain/package/tool-icons'
+import { ToolIcon } from '@/components/tool-icon'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+
+// The icons the generator suggested (three at most), with the manifest's own choice selected first.
+function iconChoices(review: Review): { options: ToolIconName[]; selected: ToolIconName } {
+  let manifest: Record<string, unknown> = {}
+  try {
+    manifest = JSON.parse(review.manifest ?? '{}') as Record<string, unknown>
+  } catch {
+    // A broken manifest is reported by validation; fall back to the default icon here.
+  }
+  const suggested = Array.isArray(manifest.iconOptions) ? manifest.iconOptions.filter(isToolIconName) : []
+  const chosen = isToolIconName(manifest.icon) ? manifest.icon : DEFAULT_TOOL_ICON
+  const options = [...new Set(suggested.length > 0 ? suggested.slice(0, 3) : [chosen])]
+  return { options, selected: options.includes(chosen) ? chosen : options[0] ?? DEFAULT_TOOL_ICON }
+}
 
 interface ReviewDialogProps {
   review: Review
   busy: boolean
-  onApprove: () => void
+  onApprove: (icon: ToolIconName) => void
   onReject: () => void
   onClose: () => void
 }
@@ -15,6 +32,8 @@ interface ReviewDialogProps {
 export function ReviewDialog({ review, busy, onApprove, onReject, onClose }: ReviewDialogProps) {
   const { request } = review
   const canApprove = request.state === 'awaiting-review' && !busy
+  const choices = iconChoices(review)
+  const [icon, setIcon] = useState<ToolIconName>(choices.selected)
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -54,6 +73,29 @@ export function ReviewDialog({ review, busy, onApprove, onReject, onClose }: Rev
             </ul>
           )}
 
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Icon</p>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {choices.options.map((name) => (
+                <button
+                  key={name}
+                  type="button"
+                  aria-pressed={name === icon}
+                  onClick={() => setIcon(name)}
+                  className={cn(
+                    'flex min-w-0 items-center gap-3 rounded-xl border p-3 text-left text-sm transition-colors',
+                    name === icon ? 'border-primary bg-primary/10 ring-2 ring-primary' : 'hover:bg-accent',
+                  )}
+                >
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#5b5bf0] to-[#e65bd6] text-white">
+                    <ToolIcon name={name} className="size-5" />
+                  </span>
+                  <span className="truncate capitalize">{name.replace(/-/g, ' ')}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid gap-4 md:grid-cols-2">
             <div className="min-w-0 space-y-1">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">manifest.json</p>
@@ -76,7 +118,7 @@ export function ReviewDialog({ review, busy, onApprove, onReject, onClose }: Rev
           <Button variant="outline" onClick={onReject} disabled={busy}>
             Reject
           </Button>
-          <Button onClick={onApprove} disabled={!canApprove}>
+          <Button onClick={() => onApprove(icon)} disabled={!canApprove}>
             Approve and install
           </Button>
         </footer>

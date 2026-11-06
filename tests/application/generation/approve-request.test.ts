@@ -23,6 +23,24 @@ function setup() {
 }
 
 describe('ApproveRequest', () => {
+  it('writes the chosen icon into the staged manifest before installing', async () => {
+    const { staging, approve } = setup()
+
+    await approve.execute({ requestId: 'req-1', icon: 'kanban' })
+
+    expect(staging.icons.get('req-1')).toBe('kanban')
+    expect(staging.promoted).toEqual(['todo-list'])
+  })
+
+  it('rejects an icon that is not in the tool icon list', async () => {
+    const { staging, approve } = setup()
+
+    const result = await approve.execute({ requestId: 'req-1', icon: 'not-an-icon' })
+
+    expect(result.ok).toBe(false)
+    expect(staging.promoted).toEqual([])
+  })
+
   it('S13: installs the staged package and marks the request installed', async () => {
     const { requests, staging, approve } = setup()
 

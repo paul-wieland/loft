@@ -55,6 +55,14 @@ export class FileStagingArea implements StagingArea {
     return false
   }
 
+  async setIcon(requestId: string, icon: string): Promise<void> {
+    const file = join(this.packageDir(requestId), 'manifest.json')
+    const manifest = JSON.parse(await readFile(file, 'utf8')) as Record<string, unknown>
+    manifest.icon = icon
+    delete manifest.iconOptions
+    await writeFile(file, JSON.stringify(manifest, null, 2))
+  }
+
   async promote(requestId: string, packageId: string): Promise<void> {
     const target = join(this.packagesRoot, packageId)
     await mkdir(this.packagesRoot, { recursive: true })
