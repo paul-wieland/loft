@@ -101,7 +101,7 @@ export function StartPage({ locations, onLocationsChange, onNewTool }: StartPage
       {locations.length === 0 ? (
         <p className="text-sm text-muted-foreground">Add a city to see its time and weather.</p>
       ) : (
-        <div className="grid w-full max-w-3xl gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid w-full max-w-2xl gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {locations.map((location, index) => (
             <CityCard
               key={`${location.name}-${location.latitude}-${location.longitude}`}
@@ -156,19 +156,19 @@ function CityCard({ location, now, onRemove }: { location: StartPageLocation; no
   const day = now.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', timeZone: location.timezone })
 
   return (
-    <div className="panel relative flex flex-col gap-2 p-3 text-left">
-      <Button variant="ghost" size="icon" className="absolute right-1 top-1 size-6" aria-label={`Remove ${location.name}`} title="Remove city" onClick={onRemove}>
-        <X className="size-3.5" />
+    <div className="panel relative flex flex-col gap-1 p-2 text-left">
+      <Button variant="ghost" size="icon" className="absolute right-0.5 top-0.5 size-5" aria-label={`Remove ${location.name}`} title="Remove city" onClick={onRemove}>
+        <X className="size-3" />
       </Button>
-      <div className="flex min-w-0 items-center gap-1.5 pr-6 text-xs font-medium">
-        <MapPin className="size-3 shrink-0" />
+      <div className="flex min-w-0 items-center gap-1 pr-5 text-[11px] font-medium">
+        <MapPin className="size-2.5 shrink-0" />
         <span className="truncate">{location.name}</span>
       </div>
       <div>
-        <p className="bg-gradient-to-r from-[#5b5bf0] to-[#e65bd6] bg-clip-text text-2xl font-semibold tabular-nums text-transparent">
+        <p className="bg-gradient-to-r from-[#5b5bf0] to-[#e65bd6] bg-clip-text text-xl font-semibold tabular-nums text-transparent">
           {time}
         </p>
-        <p className="text-[11px] text-muted-foreground">{day}</p>
+        <p className="text-[10px] text-muted-foreground">{day}</p>
       </div>
       {weatherError ? (
         <p className="text-xs text-muted-foreground">{weatherError}</p>
@@ -180,12 +180,12 @@ function CityCard({ location, now, onRemove }: { location: StartPageLocation; no
           const Icon = WEATHER_ICONS[description.icon]
           return (
             <div className="flex items-center gap-2">
-              <span className="flex size-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#5b5bf0] to-[#e65bd6] text-white">
-                <Icon className="size-3.5" />
+              <span className="flex size-6 items-center justify-center rounded-md bg-gradient-to-br from-[#5b5bf0] to-[#e65bd6] text-white">
+                <Icon className="size-3" />
               </span>
               <div>
-                <p className="text-base font-semibold tabular-nums">{Math.round(weather.temperature)}°C</p>
-                <p className="text-xs text-muted-foreground">{description.label}</p>
+                <p className="text-sm font-semibold tabular-nums">{Math.round(weather.temperature)}°C</p>
+                <p className="text-[10px] text-muted-foreground">{description.label}</p>
               </div>
             </div>
           )
