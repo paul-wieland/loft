@@ -1,6 +1,6 @@
 # Spec: Data chat per tool
 
-Status: draft, pending review
+Status: on hold. Not to be built for now because of privacy concerns about sending records to the model.
 Related: `package-contract.md`, `tool-versioning.md`, `home-cards.md`
 
 ## Purpose
