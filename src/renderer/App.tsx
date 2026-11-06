@@ -1,12 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Database, MessageSquarePlus, Send, Settings, Trash2, Wrench } from 'lucide-react'
+import { MessageSquarePlus, Send, Trash2, Wrench, X } from 'lucide-react'
 
 import type { Review } from '../application/generation/get-review'
 import type { PackageManifest } from '../domain/package/manifest'
-import { ApiKeySettings } from '@/components/api-key-settings'
 import { DatabaseView } from '@/components/database-view'
 import { ReviewPanel } from '@/components/review-panel'
-import { ThemeToggle } from '@/components/theme-toggle'
+import { SettingsMenu } from '@/components/settings-menu'
 import { ToolView } from '@/components/tool-view'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,7 +18,6 @@ interface Message {
 export function App() {
   const [draft, setDraft] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
-  const [settingsOpen, setSettingsOpen] = useState(false)
   const [databaseOpen, setDatabaseOpen] = useState(false)
   const [tools, setTools] = useState<PackageManifest[]>([])
   const [activeToolId, setActiveToolId] = useState<string | null>(null)
@@ -151,40 +149,26 @@ export function App() {
             </Button>
           ))}
         </nav>
+        <SettingsMenu onOpenDatabase={() => setDatabaseOpen(true)} />
       </aside>
 
       <main className="panel flex min-w-0 flex-1 flex-col overflow-hidden">
         <header className="flex h-14 items-center justify-between border-b px-6">
-          <h1 className="text-sm font-medium">{activeTool ? activeTool.name : 'Chat'}</h1>
+          <h1 className="text-sm font-medium">{databaseOpen ? 'Database' : activeTool ? activeTool.name : 'Chat'}</h1>
           <div className="flex items-center gap-1">
             {activeTool && (
               <Button variant="ghost" size="icon" aria-label="Uninstall tool" title="Uninstall tool" onClick={() => void uninstall()}>
                 <Trash2 />
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Database view"
-              aria-pressed={databaseOpen}
-              onClick={() => setDatabaseOpen((open) => !open)}
-            >
-              <Database />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Settings"
-              aria-expanded={settingsOpen}
-              onClick={() => setSettingsOpen((open) => !open)}
-            >
-              <Settings />
-            </Button>
-            <ThemeToggle />
+            {databaseOpen && (
+              <Button variant="ghost" size="icon" aria-label="Close database view" title="Close database view" onClick={() => setDatabaseOpen(false)}>
+                <X />
+              </Button>
+            )}
           </div>
         </header>
 
-        {settingsOpen && <ApiKeySettings />}
         {review && (
           <ReviewPanel review={review} busy={busy} onApprove={() => void approve()} onReject={() => void reject()} />
         )}

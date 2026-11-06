@@ -1,33 +1,31 @@
-import { Monitor, Moon, Sun } from 'lucide-react'
+import { Monitor, Moon, Sun, type LucideIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { useTheme, type Theme } from '@/components/theme-provider'
 
-const NEXT_THEME: Record<Theme, Theme> = {
-  light: 'dark',
-  dark: 'system',
-  system: 'light',
-}
-
-const LABEL: Record<Theme, string> = {
-  light: 'Light mode',
-  dark: 'Dark mode',
-  system: 'System theme',
-}
+const OPTIONS: { value: Theme; label: string; icon: LucideIcon }[] = [
+  { value: 'light', label: 'Light', icon: Sun },
+  { value: 'dark', label: 'Dark', icon: Moon },
+  { value: 'system', label: 'System', icon: Monitor },
+]
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
-  const Icon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      aria-label={`${LABEL[theme]}. Switch theme`}
-      title={LABEL[theme]}
-      onClick={() => setTheme(NEXT_THEME[theme])}
-    >
-      <Icon />
-    </Button>
+    <div className="grid grid-cols-3 gap-1" aria-label="Theme">
+      {OPTIONS.map(({ value, label, icon: Icon }) => (
+        <Button
+          key={value}
+          size="sm"
+          variant={theme === value ? 'outline' : 'ghost'}
+          aria-pressed={theme === value}
+          onClick={() => setTheme(value)}
+        >
+          <Icon />
+          {label}
+        </Button>
+      ))}
+    </div>
   )
 }
