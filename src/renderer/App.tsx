@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Plus, Settings, X } from 'lucide-react'
+import { House, Plus, Settings, X } from 'lucide-react'
 
 import type { Review } from '../application/generation/get-review'
 import type { PackageManifest } from '../domain/package/manifest'
@@ -8,12 +8,14 @@ import { ChatPanel, type Message } from '@/components/chat-panel'
 import { DatabaseView } from '@/components/database-view'
 import { NewToolDialog } from '@/components/new-tool-dialog'
 import { ReviewDialog } from '@/components/review-dialog'
+import { StartPage } from '@/components/start-page'
 import { SettingsDialog } from '@/components/settings-dialog'
 import { ToolActions } from '@/components/tool-actions'
 import { ToolIcon } from '@/components/tool-icon'
 import { ToolView } from '@/components/tool-view'
 import { Button } from '@/components/ui/button'
 import { applyToolOrder, loadToolOrder, moveTool, saveToolOrder } from '@/lib/tool-order'
+import { loadStartPageSettings, saveStartPageSettings, type StartPageSettings } from '@/lib/start-page-settings'
 import { cn } from '@/lib/utils'
 
 interface Thread {
@@ -39,6 +41,9 @@ export function App() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [newToolOpen, setNewToolOpen] = useState(false)
   const [toolOrder, setToolOrder] = useState<string[]>(loadToolOrder)
+  const [startPage, setStartPage] = useState<StartPageSettings>(loadStartPageSettings)
+  // Whether the start page is the current view. Starts on it when the start page is switched on.
+  const [homeOpen, setHomeOpen] = useState(() => loadStartPageSettings().enabled)
   const [dragId, setDragId] = useState<string | null>(null)
   const [dropId, setDropId] = useState<string | null>(null)
   // Thread whose generated change is open in the review dialog.
@@ -81,14 +86,29 @@ export function App() {
 
   function openTool(id: string) {
     setActiveToolId(id)
+    setHomeOpen(false)
     setEditing(false)
     setDatabaseOpen(false)
   }
 
   function openNewTool() {
     setActiveToolId(null)
+    setHomeOpen(false)
     setEditing(false)
     setDatabaseOpen(false)
+  }
+
+  function openHome() {
+    setActiveToolId(null)
+    setEditing(false)
+    setDatabaseOpen(false)
+    setHomeOpen(true)
+  }
+
+  function changeStartPage(next: StartPageSettings) {
+    setStartPage(next)
+    saveStartPageSettings(next)
+    if (!next.enabled) setHomeOpen(false)
   }
 
   async function generate(key: string, shown: string, spec: string, baseId?: string) {
@@ -224,6 +244,22 @@ export function App() {
           Workplace
         </div>
         <nav className="flex-1 overflow-y-auto px-3 py-3" aria-label="Tools">
+          {startPage.enabled && (
+            <button
+              type="button"
+              onClick={openHome}
+              aria-current={homeOpen && !activeTool && !databaseOpen ? 'page' : undefined}
+              className={cn(
+                'mb-3 flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left text-sm transition-colors',
+                homeOpen && !activeTool && !databaseOpen ? 'bg-accent font-semibold text-foreground shadow-sm' : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
+              )}
+            >
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                <House className="size-4" />
+              </span>
+              Home
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setNewToolOpen(true)}
@@ -321,7 +357,9 @@ export function App() {
                   : 'Database'
                 : activeTool
                   ? activeTool.name
-                  : 'New tool'}
+                  : homeOpen && startPage.enabled
+                    ? 'Home'
+                    : 'New tool'}
             </h1>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -370,6 +408,12 @@ export function App() {
               />
             )}
           </div>
+        ) : homeOpen && startPage.enabled ? (
+          <StartPage
+            location={startPage.location}
+            onNewTool={() => setNewToolOpen(true)}
+            onOpenSettings={() => setSettingsOpen(true)}
+          />
         ) : (
           <ChatPanel
             className="min-h-0 flex-1"
@@ -396,7 +440,10 @@ export function App() {
         />
       )}
       {settingsOpen && (
-        <SettingsDialog onClose={() => setSettingsOpen(false)} onOpenDatabase={() => {
+        <SettingsDialog
+          startPage={startPage}
+          onStartPageChange={changeStartPage}
+          onClose={() => setSettingsOpen(false)} onOpenDatabase={() => {
             setDatabaseFor(null)
             setDatabaseOpen(true)
           }} />
