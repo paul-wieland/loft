@@ -6,6 +6,7 @@ const STORAGE_KEY = 'workplace-theme'
 
 interface ThemeContextValue {
   theme: Theme
+  dark: boolean
   setTheme: (theme: Theme) => void
 }
 
@@ -21,23 +22,27 @@ function readStoredTheme(): Theme {
   return 'system'
 }
 
-function applyTheme(theme: Theme): void {
+function isDarkTheme(theme: Theme): boolean {
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-  const dark = theme === 'dark' || (theme === 'system' && prefersDark)
-  document.documentElement.classList.toggle('dark', dark)
+  return theme === 'dark' || (theme === 'system' && prefersDark)
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(readStoredTheme)
+  const [dark, setDark] = useState(() => isDarkTheme(theme))
 
   useEffect(() => {
-    applyTheme(theme)
+    const update = () => {
+      const next = isDarkTheme(theme)
+      document.documentElement.classList.toggle('dark', next)
+      setDark(next)
+    }
+    update()
     if (theme !== 'system') return
 
     const media = window.matchMedia('(prefers-color-scheme: dark)')
-    const onChange = () => applyTheme('system')
-    media.addEventListener('change', onChange)
-    return () => media.removeEventListener('change', onChange)
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
   }, [theme])
 
   function setTheme(next: Theme): void {
@@ -49,7 +54,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setThemeState(next)
   }
 
-  return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>
+  return <ThemeContext.Provider value={{ theme, dark, setTheme }}>{children}</ThemeContext.Provider>
 }
 
 export function useTheme(): ThemeContextValue {

@@ -29,8 +29,6 @@ export function SettingsDialog({ onClose, onOpenDatabase }: SettingsDialogProps)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [onClose])
 
-  const current = SECTIONS.find((item) => item.id === section) ?? SECTIONS[0]
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onMouseDown={onClose}>
       <div
@@ -58,7 +56,7 @@ export function SettingsDialog({ onClose, onOpenDatabase }: SettingsDialogProps)
 
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="flex h-14 shrink-0 items-center justify-between border-b px-6">
-            <h2 className="font-semibold">{current.label}</h2>
+            <h2 className="font-semibold">{SECTIONS.find((item) => item.id === section)?.label}</h2>
             <Button variant="ghost" size="icon" aria-label="Close settings" title="Close settings" onClick={onClose}>
               <X />
             </Button>

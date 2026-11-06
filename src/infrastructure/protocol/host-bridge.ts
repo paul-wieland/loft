@@ -15,6 +15,14 @@ export const HOST_BRIDGE_SOURCE = `(() => {
     else entry.reject(new Error(message.error));
   });
 
+  window.addEventListener('message', (event) => {
+    if (event.source !== window.parent) return;
+    const message = event.data;
+    if (!message || message.type !== 'workplace:theme') return;
+    document.documentElement.classList.toggle('dark', message.dark === true);
+  });
+  window.parent.postMessage({ type: 'workplace:ready' }, '*');
+
   function call(op, args) {
     return new Promise((resolve, reject) => {
       const id = ++nextId;

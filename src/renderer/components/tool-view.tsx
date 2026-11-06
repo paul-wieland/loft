@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 import type { PackageManifest } from '../../domain/package/manifest'
+import { useTheme } from '@/components/theme-provider'
 
 interface ToolCall {
   type: 'workplace:call'
@@ -11,11 +12,23 @@ interface ToolCall {
 
 export function ToolView({ manifest }: { manifest: PackageManifest }) {
   const frameRef = useRef<HTMLIFrameElement>(null)
+  const { dark } = useTheme()
+
+  useEffect(() => {
+    frameRef.current?.contentWindow?.postMessage({ type: 'workplace:theme', dark }, '*')
+  }, [dark])
 
   useEffect(() => {
     async function onMessage(event: MessageEvent) {
       const frame = frameRef.current
-      if (!frame || event.source !== frame.contentWindow || !isToolCall(event.data)) return
+      if (!frame || event.source !== frame.contentWindow) return
+
+      // The tool announces itself once its bridge is ready; send it the current theme.
+      if (isReady(event.data)) {
+        frame.contentWindow?.postMessage({ type: 'workplace:theme', dark }, '*')
+        return
+      }
+      if (!isToolCall(event.data)) return
 
       const call = event.data
       const result = await window.workplace.store.call({
@@ -38,7 +51,7 @@ export function ToolView({ manifest }: { manifest: PackageManifest }) {
 
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
-  }, [manifest.id])
+  }, [manifest.id, dark])
 
   return (
     <iframe
@@ -50,6 +63,10 @@ export function ToolView({ manifest }: { manifest: PackageManifest }) {
       className="h-full w-full flex-1 border-0 bg-background"
     />
   )
+}
+
+function isReady(value: unknown): boolean {
+  return typeof value === 'object' && value !== null && (value as Record<string, unknown>).type === 'workplace:ready'
 }
 
 function isToolCall(value: unknown): value is ToolCall {
