@@ -70,7 +70,6 @@ export function StartPageOptions({ settings, onChange }: StartPageOptionsProps) 
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-medium">Show start page</p>
-          <p className="text-sm text-muted-foreground">The time and weather when the app opens.</p>
         </div>
         <button
           type="button"
