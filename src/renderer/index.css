@@ -77,8 +77,3 @@
   box-shadow: 0 10px 30px -10px rgba(30, 30, 70, 0.25), 0 2px 6px rgba(30, 30, 70, 0.06);
 }
 
-@utility dot-grid {
-  background-color: var(--background);
-  background-image: radial-gradient(var(--dot) 1.2px, transparent 1.3px);
-  background-size: 24px 24px;
-}

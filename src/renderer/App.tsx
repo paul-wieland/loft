@@ -246,7 +246,7 @@ export function App() {
   }
 
   return (
-    <div className="dot-grid flex h-screen gap-3 p-3">
+    <div className="flex h-screen gap-3 bg-background p-3">
       <aside className="panel flex w-60 shrink-0 flex-col overflow-hidden">
         <div className="flex h-14 items-center gap-2.5 px-4 font-semibold">
           <span className="size-6 rounded-lg bg-gradient-to-br from-[#5b5bf0] to-[#e65bd6]" />
