@@ -396,7 +396,7 @@ export function App() {
         ) : activeTool ? (
           <div className="flex min-h-0 flex-1 flex-col">
             <div className={cn('flex min-h-0 flex-1', editing && 'bg-gradient-to-br from-[#5b5bf0] via-[#8b5cf6] to-[#e65bd6] p-1.5')}>
-              <div className="flex min-h-0 flex-1 overflow-hidden rounded-[14px] bg-background">
+              <div className="flex min-h-0 flex-1 overflow-hidden bg-background">
                 <ToolView key={`${activeTool.id}:${revision}`} manifest={activeTool} onDataChanged={() => dataChanged(activeTool.id)} />
               </div>
             </div>
