@@ -246,8 +246,8 @@ export function App() {
   }
 
   return (
-    <div className="flex h-screen bg-background p-3">
-      <aside className="panel flex w-60 shrink-0 flex-col overflow-hidden">
+    <div className="flex h-screen bg-background">
+      <aside className="flex w-60 shrink-0 flex-col overflow-hidden border-r border-border bg-card">
         <div className="flex h-14 items-center gap-2.5 px-4 font-semibold">
           <span className="size-6 rounded-lg bg-gradient-to-br from-[#5b5bf0] to-[#e65bd6]" />
           Workplace
@@ -351,7 +351,7 @@ export function App() {
         </div>
       </aside>
 
-      <main className="panel flex min-w-0 flex-1 flex-col overflow-hidden">
+      <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-card">
         <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b px-6">
           <div className="flex min-w-0 items-center gap-2.5">
             {activeTool && !databaseOpen && (
