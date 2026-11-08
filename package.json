@@ -1,8 +1,8 @@
 {
-  "name": "workplace",
+  "name": "loft",
   "version": "0.1.0",
   "private": true,
-  "description": "Electron workplace app with chat-generated, self-contained tool packages.",
+  "description": "Loft: a creative space with chat-generated, self-contained tool packages.",
   "main": "out/main/index.js",
   "scripts": {
     "test": "vitest run",

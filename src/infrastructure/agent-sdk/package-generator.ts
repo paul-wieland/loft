@@ -9,7 +9,7 @@ const MODEL = 'claude-sonnet-5-5'
 const ALLOWED_TOOLS = ['Read', 'Write', 'Edit', 'Glob', 'Grep']
 const DISALLOWED_TOOLS = ['Bash', 'WebFetch', 'WebSearch', 'Task']
 
-const SYSTEM_PROMPT = `You generate small, self-contained tool packages for the Workplace desktop app.
+const SYSTEM_PROMPT = `You generate small, self-contained tool packages for the Loft desktop app.
 
 Work only with the Read, Write, Edit, Glob and Grep tools inside your working directory. Create these files:
 - manifest.json: { "id", "name", "version", "icon", "description", "entry", "permissions", "contractVersion" }

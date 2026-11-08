@@ -33,7 +33,7 @@ function createWindow(): void {
   const window = new BrowserWindow({
     width: 1100,
     height: 720,
-    title: 'Workplace',
+    title: 'Loft',
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,

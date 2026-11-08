@@ -250,7 +250,7 @@ export function App() {
       <aside className="flex w-60 shrink-0 flex-col overflow-hidden border-r border-border bg-card">
         <div className="flex h-14 items-center gap-2.5 px-4 font-semibold">
           <span className="size-6 rounded-lg bg-gradient-to-br from-[#5b5bf0] to-[#e65bd6]" />
-          Workplace
+          Loft
         </div>
         <nav className="flex-1 overflow-y-auto px-3 py-3" aria-label="Tools">
           {startPage.enabled && (
