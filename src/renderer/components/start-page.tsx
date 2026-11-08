@@ -83,15 +83,15 @@ export function StartPage({ locations, onLocationsChange, onNewTool, cards, data
 
       <div className="flex flex-wrap gap-2">
         {locations.length < MAX_LOCATIONS && (
-          <Button variant="outline" onClick={() => setAddingCity(true)}>
-            <Plus />
+          <button
+            type="button"
+            onClick={() => setAddingCity(true)}
+            className="inline-flex h-9 items-center gap-2 rounded-full bg-primary/10 px-4 text-sm font-medium text-primary transition-colors hover:bg-primary/15"
+          >
+            <Plus className="size-4" />
             Add city
-          </Button>
+          </button>
         )}
-        <Button variant="outline" onClick={onNewTool}>
-          <Plus />
-          New tool
-        </Button>
         <Button
           variant="ghost"
           size="icon"
@@ -190,10 +190,7 @@ function CityCard({ location, now, onRemove }: { location: StartPageLocation; no
   const day = now.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', timeZone: location.timezone })
 
   return (
-    <div className="panel relative flex flex-col gap-1 p-2 text-left">
-      <Button variant="ghost" size="icon" className="absolute right-0.5 top-0.5 size-5" aria-label={`Remove ${location.name}`} title="Remove city" onClick={onRemove}>
-        <X className="size-3" />
-      </Button>
+    <div className="panel group relative flex flex-col gap-1 p-2 text-left">
       <div className="flex min-w-0 items-center gap-1 pr-5 text-[11px] font-medium">
         <MapPin className="size-2.5 shrink-0" />
         <span className="truncate">{location.name}</span>
@@ -225,6 +222,14 @@ function CityCard({ location, now, onRemove }: { location: StartPageLocation; no
           )
         })()
       )}
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={`Remove ${location.name}`}
+        className="self-end text-xs text-muted-foreground opacity-0 transition-opacity hover:text-destructive focus:opacity-100 group-hover:opacity-100"
+      >
+        Remove
+      </button>
     </div>
   )
 }
