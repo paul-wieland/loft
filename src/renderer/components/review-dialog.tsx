@@ -54,7 +54,7 @@ export function ReviewDialog({ review, busy, onApprove, onReject, onClose }: Rev
         role="dialog"
         aria-modal="true"
         aria-label="Review changes"
-        className="panel flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden shadow-xl"
+        className="panel flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden bg-[var(--content)] shadow-xl"
         onMouseDown={(event) => event.stopPropagation()}
       >
         <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b px-6">
@@ -79,7 +79,7 @@ export function ReviewDialog({ review, busy, onApprove, onReject, onClose }: Rev
           )}
 
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border">
-            <div role="tablist" aria-label="Review views" className="flex shrink-0 gap-1 border-b bg-background px-2 pt-2">
+            <div role="tablist" aria-label="Review views" className="flex shrink-0 gap-1 border-b bg-[var(--content)] px-2 pt-2">
               {TABS.map((item) => (
                 <button
                   key={item.id}
@@ -89,14 +89,14 @@ export function ReviewDialog({ review, busy, onApprove, onReject, onClose }: Rev
                   onClick={() => setTab(item.id)}
                   className={cn(
                     'rounded-t-md border border-b-0 px-4 py-2 text-sm',
-                    tab === item.id ? 'bg-card font-semibold' : 'border-transparent text-muted-foreground hover:bg-accent',
+                    tab === item.id ? 'bg-[var(--content)] font-semibold' : 'border-transparent text-muted-foreground hover:bg-accent',
                   )}
                 >
                   {item.label}
                 </button>
               ))}
             </div>
-            <div className="min-h-0 flex-1" style={{ height: '52vh' }} role="tabpanel">
+            <div className="h-[72vh] min-h-0" role="tabpanel">
               {tab === 'preview' ? (
                 review.entrySource ? (
                   <ToolPreview requestId={request.id} name={request.packageId} />

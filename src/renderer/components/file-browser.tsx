@@ -75,17 +75,17 @@ export function FileBrowser({ requestId, files }: FileBrowserProps) {
 
   return (
     <div className="flex h-full min-h-0">
-      <nav aria-label="Package files" className="w-60 shrink-0 overflow-y-auto border-r p-2 text-sm">
+      <nav aria-label="Package files" className="min-h-0 w-60 shrink-0 overflow-y-auto border-r p-2 text-sm">
         {files.length === 0 && <p className="px-2 py-1 text-muted-foreground">No files yet</p>}
         <Tree nodes={tree} depth={0} open={open} selected={selected} onToggle={toggle} onSelect={setSelected} />
       </nav>
-      <div className="min-w-0 flex-1 overflow-auto">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
         {selected ? (
           <>
             <p className="sticky top-0 border-b bg-background px-4 py-2 font-mono text-xs text-muted-foreground">
               {selected}
             </p>
-            <pre className="p-4 text-xs leading-relaxed">{contents ?? 'Loading…'}</pre>
+            <pre className="p-4 text-xs leading-relaxed whitespace-pre">{contents ?? 'Loading…'}</pre>
           </>
         ) : (
           <p className="p-4 text-sm text-muted-foreground">Select a file to see its contents.</p>
