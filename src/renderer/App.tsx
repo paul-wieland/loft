@@ -12,6 +12,7 @@ import { StartPage } from '@/components/start-page'
 import { SettingsDialog } from '@/components/settings-dialog'
 import { ToolActions } from '@/components/tool-actions'
 import { ToolIcon } from '@/components/tool-icon'
+import type { SectionId } from '@/components/settings-dialog'
 import { ToolView } from '@/components/tool-view'
 import { Button } from '@/components/ui/button'
 import { applyToolOrder, loadToolOrder, moveTool, saveToolOrder } from '@/lib/tool-order'
@@ -39,6 +40,8 @@ export function App() {
   // Tool whose database the view opens on; null shows every tool's database.
   const [databaseFor, setDatabaseFor] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsSection, setSettingsSection] = useState<SectionId>('appearance')
+  const [settingsHint, setSettingsHint] = useState<string | null>(null)
   const [newToolOpen, setNewToolOpen] = useState(false)
   const [toolOrder, setToolOrder] = useState<string[]>(loadToolOrder)
   const [startPage, setStartPage] = useState<StartPageSettings>(loadStartPageSettings)
@@ -148,15 +151,31 @@ export function App() {
     setBusy(false)
   }
 
+  function openSettings(section: SectionId = 'appearance', hint: string | null = null) {
+    setSettingsSection(section)
+    setSettingsHint(hint)
+    setSettingsOpen(true)
+  }
+
+  // Creating or changing a tool needs a Claude API key. Without one, open the Claude settings instead.
+  async function requireApiKey(): Promise<boolean> {
+    const status = await window.workplace.keys.status()
+    if (status.configured) return true
+    openSettings('claude', 'Add your Claude API key to create and edit tools. It is stored encrypted on this computer.')
+    return false
+  }
+
   async function send(event: FormEvent) {
     event.preventDefault()
     const text = draft.trim()
     if (!text || busy) return
+    if (!(await requireApiKey())) return
     setDraft('')
     await generate(threadKey, text, text, editing && activeTool ? activeTool.id : undefined)
   }
 
-  function createTool(name: string, description: string, withCard: boolean) {
+  async function createTool(name: string, description: string, withCard: boolean) {
+    if (!(await requireApiKey())) return
     setNewToolOpen(false)
     openNewTool()
     const card = withCard
@@ -344,7 +363,7 @@ export function App() {
           </ul>
         </nav>
         <div className="border-t p-3">
-          <Button variant="ghost" className="w-full justify-start" aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
+          <Button variant="ghost" className="w-full justify-start" aria-haspopup="dialog" onClick={() => openSettings()}>
             <Settings />
             Settings
           </Button>
@@ -451,14 +470,16 @@ export function App() {
           onClose={() => setReviewKey(null)}
         />
       )}
+      {newToolOpen && <NewToolDialog onClose={() => setNewToolOpen(false)} onCreate={createTool} />}
       {settingsOpen && (
         <SettingsDialog
+          initialSection={settingsSection}
+          hint={settingsHint}
           onClose={() => setSettingsOpen(false)} onOpenDatabase={() => {
             setDatabaseFor(null)
             setDatabaseOpen(true)
           }} />
       )}
-      {newToolOpen && <NewToolDialog onClose={() => setNewToolOpen(false)} onCreate={createTool} />}
     </div>
   )
 }

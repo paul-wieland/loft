@@ -8,9 +8,11 @@ import { Button } from '@/components/ui/button'
 interface SettingsDialogProps {
   onClose: () => void
   onOpenDatabase: () => void
+  initialSection?: SectionId
+  hint?: string | null
 }
 
-type SectionId = 'appearance' | 'claude' | 'data'
+export type SectionId = 'appearance' | 'claude' | 'data'
 
 const SECTIONS: { id: SectionId; label: string; icon: LucideIcon }[] = [
   { id: 'appearance', label: 'Appearance', icon: Palette },
@@ -18,8 +20,8 @@ const SECTIONS: { id: SectionId; label: string; icon: LucideIcon }[] = [
   { id: 'data', label: 'Data', icon: Database },
 ]
 
-export function SettingsDialog({ onClose, onOpenDatabase }: SettingsDialogProps) {
-  const [section, setSection] = useState<SectionId>('appearance')
+export function SettingsDialog({ onClose, onOpenDatabase, initialSection = 'appearance', hint = null }: SettingsDialogProps) {
+  const [section, setSection] = useState<SectionId>(initialSection)
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -62,6 +64,11 @@ export function SettingsDialog({ onClose, onOpenDatabase }: SettingsDialogProps)
             </Button>
           </header>
           <div className="flex-1 overflow-y-auto p-6">
+            {hint && (
+              <p role="status" className="mb-6 rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm">
+                {hint}
+              </p>
+            )}
             {section === 'appearance' && <ThemeToggle />}
             {section === 'claude' && <ApiKeySettings />}
             {section === 'data' && (
