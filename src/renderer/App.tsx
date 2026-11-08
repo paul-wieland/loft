@@ -295,26 +295,6 @@ export function App() {
     await refreshTools()
   }
 
-  async function uninstall() {
-    if (!activeTool) return
-    if (!window.confirm(`Uninstall "${activeTool.name}"?`)) return
-    const deleteData = window.confirm(
-      `Also delete the saved data of "${activeTool.name}"? OK deletes it, Cancel keeps it.`,
-    )
-
-    const result = await window.workplace.packages.uninstall(activeTool.id, deleteData)
-    if (!result.ok) {
-      window.alert(`Uninstall failed: ${result.error}`)
-      return
-    }
-
-    const { [activeTool.id]: _removed, ...rest } = threads
-    setThreads(rest)
-    setActiveToolId(null)
-    setEditing(false)
-    await refreshTools()
-  }
-
   return (
     <div className="flex h-screen bg-background">
       <aside className="flex w-60 shrink-0 flex-col overflow-hidden border-r border-border bg-[var(--nav)]">
@@ -461,7 +441,6 @@ export function App() {
               <ToolActions
                 editing={editing}
                 onEdit={() => setEditing((current) => !current)}
-                onDelete={() => void uninstall()}
                 onViewDatabase={() => {
                   setDatabaseFor(activeTool.id)
                   setDatabaseOpen(true)
