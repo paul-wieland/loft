@@ -12,6 +12,12 @@ Loft is a desktop app for small, personal tools. You describe a tool in plain la
 - **Install from the Marketplace.** Tools built by others are listed in the [loft-tools](https://github.com/paul-wieland/loft-tools) repository. You can install, update and remove them from the Marketplace page.
 - **Tools run in a sandbox.** Each tool runs in its own frame with a strict content security policy. It can only read and write its own data, and it can't reach other tools or the internet.
 
+## Create a tool
+
+Give the tool a name and describe what it should do. Claude writes it, and you review it before anything is installed.
+
+![New tool dialog with a name and a description filled in](docs/screenshots/new-tool-dialog.png)
+
 ## Built-in tools
 
 These tools come from the Marketplace. Each one has its own sample screenshot below.
