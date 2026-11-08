@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { House, Plus, Settings, ShoppingBag, X } from 'lucide-react'
 
 import type { Review } from '../application/generation/get-review'
@@ -58,6 +58,8 @@ export function App() {
   const [dropId, setDropId] = useState<string | null>(null)
   // Thread whose generated change is open in the review dialog.
   const [reviewKey, setReviewKey] = useState<string | null>(null)
+  // The request id of a review opened from the Marketplace. Approving it installs a tool without opening edit mode.
+  const marketReviewId = useRef<string | null>(null)
   // Bumped when a tool writes data, so its home card reloads.
   const [dataRevisions, setDataRevisions] = useState<Record<string, number>>({})
 
@@ -230,10 +232,12 @@ export function App() {
     if (key === NEW_TOOL_THREAD) updateThread(NEW_TOOL_THREAD, () => EMPTY_THREAD)
     else updateThread(key, (current) => ({ ...current, review: null }))
     await refreshTools()
-    // The tool opens in edit mode, so the next message refines it.
+    // A tool made in the chat opens in edit mode, so the next message refines it. A marketplace install just opens the tool.
+    const fromMarketplace = requestId === marketReviewId.current
+    marketReviewId.current = null
     setActiveToolId(packageId)
     setMarketOpen(false)
-    setEditing(true)
+    setEditing(!fromMarketplace)
     setRevision((current) => current + 1)
   }
 
@@ -269,6 +273,7 @@ export function App() {
       window.alert(`Could not install ${packageId}: ${started.error}`)
       return
     }
+    marketReviewId.current = started.value.id
     const view = await window.workplace.generation.review(started.value.id)
     updateThread(NEW_TOOL_THREAD, (current) => ({ ...current, review: view }))
     setReviewKey(NEW_TOOL_THREAD)
