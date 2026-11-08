@@ -78,7 +78,7 @@ export function StartPage({ locations, onLocationsChange, onNewTool, cards, data
     <div className="flex min-h-0 flex-1 flex-col items-start gap-6 overflow-y-auto p-8 text-left">
       <div>
         <p className="text-sm font-medium text-muted-foreground">{greeting}</p>
-        <p className="mt-1 text-lg text-muted-foreground">{date}</p>
+        <p className="mt-1 text-3xl font-semibold tracking-tight">{date}</p>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -146,8 +146,6 @@ export function StartPage({ locations, onLocationsChange, onNewTool, cards, data
           ))}
         </div>
       )}
-
-      <HomeCards tools={cards} revisions={dataRevisions} onOpenTool={onOpenTool} />
 
       {addingCity && (
         <AddCityDialog
