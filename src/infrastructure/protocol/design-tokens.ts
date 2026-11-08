@@ -13,7 +13,7 @@ export const DESIGN_TOKENS_CSS = `:root{
   --brand-a:#8b8bff;--brand-b:#e65bd6;
 }
 :root[data-style="loft"]{
-  --bg:#F6E6C8;--dot:#E6CFA5;--ui:#FBF1DE;--ink:#4A2412;--muted:#7A3B1E;--accent:#E2711D;--accent-soft:#F3DDB8;--line:#E6CFA5;
+  --bg:#FFFFFF;--dot:#E9DFCF;--ui:#FFFFFF;--ink:#4A2412;--muted:#7A3B1E;--accent:#E2711D;--accent-soft:#F3DDB8;--line:#EADFCB;
   --danger:#C4471B;--shadow-panel:0 10px 30px -12px rgba(74,36,18,.25),0 2px 6px rgba(74,36,18,.08);--on-accent:#4A2412;
   --brand-a:#E2711D;--brand-b:#E9A23B;
 }
