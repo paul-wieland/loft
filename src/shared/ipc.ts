@@ -15,6 +15,7 @@ export const IPC = {
   generationReview: 'generation:review',
   generationApprove: 'generation:approve',
   generationReject: 'generation:reject',
+  generationFile: 'generation:file',
   packagesList: 'packages:list',
   storeCall: 'store:call',
   packagesUninstall: 'packages:uninstall',
@@ -36,6 +37,7 @@ export interface WorkplaceApi {
     review(requestId: string): Promise<Review | null>
     approve(requestId: string, replace: boolean, icon?: string): Promise<Result<ApproveOutcome, string>>
     reject(requestId: string): Promise<Result<void, string>>
+    file(requestId: string, path: string): Promise<string | null>
   }
   packages: {
     list(): Promise<PackageManifest[]>

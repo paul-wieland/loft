@@ -25,7 +25,7 @@ import { registerKeyHandlers } from '../infrastructure/ipc/key-handlers'
 import { registerPackageHandlers } from '../infrastructure/ipc/package-handlers'
 import { SafeStorageKeyStore } from '../infrastructure/keychain/safe-storage-key-store'
 import { MemoryRequestStore } from '../infrastructure/memory/memory-request-store'
-import { registerPackageScheme, servePackages } from '../infrastructure/protocol/package-protocol'
+import { registerPackageScheme, servePackages, servePreviews } from '../infrastructure/protocol/package-protocol'
 import { SqliteDataStore } from '../infrastructure/sqlite/sqlite-data-store'
 import { FileDataBackups } from '../infrastructure/fs/file-data-backups'
 
@@ -89,6 +89,7 @@ app.whenReady().then(() => {
     review: new GetReview(requests, staging),
     approve: new ApproveRequest(requests, staging, packages, data, backups),
     reject: new RejectRequest(requests, staging),
+    readFile: (requestId, path) => staging.readFile(requestId, path),
   })
   registerPackageHandlers({
     list: new ListPackages(packages),
@@ -98,6 +99,7 @@ app.whenReady().then(() => {
   registerDebugHandlers({ inspect: new InspectData(data) })
   registerMarketplaceHandlers({ install: new InstallFromCatalog(requests, staging, validate, randomUUID) })
   servePackages(packagesRoot)
+  servePreviews(stagingRoot)
 
   createWindow()
 

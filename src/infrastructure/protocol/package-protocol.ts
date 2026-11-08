@@ -11,6 +11,10 @@ const TOKENS_PATH = '__workplace/tokens.css'
 const CARD_BRIDGE_PATH = '__workplace/card-bridge.js'
 
 export const PACKAGE_SCHEME = 'workplace-pkg'
+// A preview runs a package that is still in review. Its host is the review request id.
+export const PREVIEW_SCHEME = 'workplace-preview'
+
+const REQUEST_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 const MIME_TYPES: Record<string, string> = {
   '.html': 'text/html',
@@ -20,48 +24,62 @@ const MIME_TYPES: Record<string, string> = {
 }
 
 export function registerPackageScheme(): void {
-  protocol.registerSchemesAsPrivileged([
-    {
-      scheme: PACKAGE_SCHEME,
-      privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true },
-    },
-  ])
+  protocol.registerSchemesAsPrivileged([PACKAGE_SCHEME, PREVIEW_SCHEME].map((scheme) => ({
+    scheme,
+    privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true },
+  })))
 }
 
 export function servePackages(packagesRoot: string): void {
-  protocol.handle(PACKAGE_SCHEME, async (request) => {
-    const url = new URL(request.url)
-    const packageId = url.hostname
-    if (!isValidPackageId(packageId)) return notFound()
-
-    const packageDir = join(packagesRoot, packageId)
-    const relativePath = url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname.slice(1))
-
-    if (relativePath === 'index.html') return wrapperPage(packageId, packageDir)
-    if (relativePath === BRIDGE_PATH) return script(HOST_BRIDGE_SOURCE)
-    if (relativePath === CARD_BRIDGE_PATH) return script(CARD_BRIDGE_SOURCE)
-    if (relativePath === 'card.html') return cardPage(packageId, packageDir)
-    if (relativePath === TOKENS_PATH) return stylesheet(DESIGN_TOKENS_CSS)
-
-    const file = resolve(packageDir, relativePath)
-    if (!file.startsWith(packageDir + sep)) return notFound()
-
-    try {
-      const data = await readFile(file)
-      return new Response(data, {
-        headers: {
-          'content-type': MIME_TYPES[extname(file)] ?? 'application/octet-stream',
-          'access-control-allow-origin': '*',
-        },
-      })
-    } catch {
-      return notFound()
-    }
-  })
+  protocol.handle(PACKAGE_SCHEME, (request) =>
+    serve(request, PACKAGE_SCHEME, (host) => (isValidPackageId(host) ? join(packagesRoot, host) : null)),
+  )
 }
 
-async function wrapperPage(packageId: string, packageDir: string): Promise<Response> {
-  const origin = `${PACKAGE_SCHEME}://${packageId}`
+// Previews read the staged package, so a tool can be tried before it is approved.
+export function servePreviews(stagingRoot: string): void {
+  protocol.handle(PREVIEW_SCHEME, (request) =>
+    serve(request, PREVIEW_SCHEME, (host) =>
+      REQUEST_ID_PATTERN.test(host) ? join(stagingRoot, host, 'package') : null,
+    ),
+  )
+}
+
+async function serve(
+  request: Request,
+  scheme: string,
+  packageDirFor: (host: string) => string | null,
+): Promise<Response> {
+  const url = new URL(request.url)
+  const packageDir = packageDirFor(url.hostname)
+  if (!packageDir) return notFound()
+
+  const origin = `${scheme}://${url.hostname}`
+  const relativePath = url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname.slice(1))
+
+  if (relativePath === 'index.html') return wrapperPage(origin, packageDir)
+  if (relativePath === BRIDGE_PATH) return script(HOST_BRIDGE_SOURCE)
+  if (relativePath === CARD_BRIDGE_PATH) return script(CARD_BRIDGE_SOURCE)
+  if (relativePath === 'card.html') return cardPage(origin, packageDir)
+  if (relativePath === TOKENS_PATH) return stylesheet(DESIGN_TOKENS_CSS)
+
+  const file = resolve(packageDir, relativePath)
+  if (!file.startsWith(packageDir + sep)) return notFound()
+
+  try {
+    const data = await readFile(file)
+    return new Response(data, {
+      headers: {
+        'content-type': MIME_TYPES[extname(file)] ?? 'application/octet-stream',
+        'access-control-allow-origin': '*',
+      },
+    })
+  } catch {
+    return notFound()
+  }
+}
+
+async function wrapperPage(origin: string, packageDir: string): Promise<Response> {
   const hasStyles = await exists(join(packageDir, 'ui', 'styles.css'))
 
   const html = `<!doctype html>
@@ -86,10 +104,9 @@ async function wrapperPage(packageId: string, packageDir: string): Promise<Respo
   })
 }
 
-async function cardPage(packageId: string, packageDir: string): Promise<Response> {
+async function cardPage(origin: string, packageDir: string): Promise<Response> {
   if (!(await exists(join(packageDir, 'ui', 'card.js')))) return notFound()
 
-  const origin = `${PACKAGE_SCHEME}://${packageId}`
   const hasStyles = await exists(join(packageDir, 'ui', 'card.css'))
 
   const html = `<!doctype html>

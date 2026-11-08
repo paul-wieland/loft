@@ -11,9 +11,10 @@ interface GenerationUseCases {
   review: GetReview
   approve: ApproveRequest
   reject: RejectRequest
+  readFile: (requestId: string, path: string) => Promise<string | null>
 }
 
-export function registerGenerationHandlers({ start, review, approve, reject }: GenerationUseCases): void {
+export function registerGenerationHandlers({ start, review, approve, reject, readFile }: GenerationUseCases): void {
   ipcMain.handle(IPC.generationStart, (_event, spec: unknown, basePackageId: unknown) => {
     if (typeof spec !== 'string') return { ok: false, error: 'Describe the tool you want' }
     if (basePackageId !== undefined && typeof basePackageId !== 'string') return { ok: false, error: 'Unknown tool' }
@@ -33,5 +34,13 @@ export function registerGenerationHandlers({ start, review, approve, reject }: G
   ipcMain.handle(IPC.generationReject, (_event, requestId: unknown) => {
     if (typeof requestId !== 'string') return { ok: false, error: 'Invalid request' }
     return reject.execute(requestId)
+  })
+
+  // Only files the review lists can be read, so the Files view cannot reach anything else.
+  ipcMain.handle(IPC.generationFile, async (_event, requestId: unknown, path: unknown) => {
+    if (typeof requestId !== 'string' || typeof path !== 'string') return null
+    const view = await review.execute(requestId)
+    if (!view || !view.files.includes(path)) return null
+    return readFile(requestId, path)
   })
 }

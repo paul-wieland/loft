@@ -3,7 +3,9 @@ import { X } from 'lucide-react'
 
 import type { Review } from '../../application/generation/get-review'
 import { DEFAULT_TOOL_ICON, isToolIconName, type ToolIconName } from '../../domain/package/tool-icons'
+import { FileBrowser } from '@/components/file-browser'
 import { ToolIcon } from '@/components/tool-icon'
+import { ToolPreview } from '@/components/tool-preview'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -21,6 +23,13 @@ function iconChoices(review: Review): { options: ToolIconName[]; selected: ToolI
   return { options, selected: options.includes(chosen) ? chosen : options[0] ?? DEFAULT_TOOL_ICON }
 }
 
+type ReviewTab = 'preview' | 'files'
+
+const TABS: { id: ReviewTab; label: string }[] = [
+  { id: 'preview', label: 'Preview' },
+  { id: 'files', label: 'Files' },
+]
+
 interface ReviewDialogProps {
   review: Review
   busy: boolean
@@ -34,6 +43,7 @@ export function ReviewDialog({ review, busy, onApprove, onReject, onClose }: Rev
   const canApprove = request.state === 'awaiting-review' && !busy
   const choices = iconChoices(review)
   const [icon, setIcon] = useState<ToolIconName>(choices.selected)
+  const [tab, setTab] = useState<ReviewTab>('preview')
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -49,7 +59,7 @@ export function ReviewDialog({ review, busy, onApprove, onReject, onClose }: Rev
         role="dialog"
         aria-modal="true"
         aria-label="Review changes"
-        className="panel flex max-h-[88vh] w-full max-w-3xl flex-col overflow-hidden shadow-xl"
+        className="panel flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden shadow-xl"
         onMouseDown={(event) => event.stopPropagation()}
       >
         <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b px-6">
@@ -62,18 +72,49 @@ export function ReviewDialog({ review, busy, onApprove, onReject, onClose }: Rev
           </div>
         </header>
 
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-6">
-          <p className="text-sm text-muted-foreground">{request.spec}</p>
+        <div className="flex min-h-0 flex-1 flex-col gap-4 p-6">
+          <p className="shrink-0 text-sm text-muted-foreground">{request.spec}</p>
 
           {request.errors.length > 0 && (
-            <ul role="alert" className="list-disc space-y-1 pl-5 text-sm text-destructive">
+            <ul role="alert" className="shrink-0 list-disc space-y-1 pl-5 text-sm text-destructive">
               {request.errors.map((error) => (
                 <li key={error}>{error}</li>
               ))}
             </ul>
           )}
 
-          <div className="space-y-2">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border">
+            <div role="tablist" aria-label="Review views" className="flex shrink-0 gap-1 border-b bg-background px-2 pt-2">
+              {TABS.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === item.id}
+                  onClick={() => setTab(item.id)}
+                  className={cn(
+                    'rounded-t-md border border-b-0 px-4 py-2 text-sm',
+                    tab === item.id ? 'bg-card font-semibold' : 'border-transparent text-muted-foreground hover:bg-accent',
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            <div className="min-h-0 flex-1" style={{ height: '52vh' }} role="tabpanel">
+              {tab === 'preview' ? (
+                review.entrySource ? (
+                  <ToolPreview requestId={request.id} name={request.packageId} />
+                ) : (
+                  <p className="p-6 text-sm text-muted-foreground">This package has no ui/index.js to preview.</p>
+                )
+              ) : (
+                <FileBrowser requestId={request.id} files={review.files} />
+              )}
+            </div>
+          </div>
+
+          <div className="shrink-0 space-y-2">
             <p className="text-sm font-medium">Icon</p>
             <div className="grid gap-2 sm:grid-cols-3">
               {choices.options.map((name) => (
@@ -95,23 +136,6 @@ export function ReviewDialog({ review, busy, onApprove, onReject, onClose }: Rev
               ))}
             </div>
           </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="min-w-0 space-y-1">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">manifest.json</p>
-              <pre className="max-h-72 overflow-auto rounded-md border bg-background p-3 text-xs">
-                {review.manifest ?? 'No manifest.json'}
-              </pre>
-            </div>
-            <div className="min-w-0 space-y-1">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">ui/index.js</p>
-              <pre className="max-h-72 overflow-auto rounded-md border bg-background p-3 text-xs">
-                {review.entrySource ?? 'No ui/index.js'}
-              </pre>
-            </div>
-          </div>
-
-          <p className="text-xs text-muted-foreground">Files: {review.files.join(', ') || 'none'}</p>
         </div>
 
         <footer className="flex shrink-0 justify-end gap-2 border-t px-6 py-4">
