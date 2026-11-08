@@ -21,6 +21,10 @@ const api: WorkplaceApi = {
   store: {
     call: (call) => ipcRenderer.invoke(IPC.storeCall, call),
   },
+  marketplace: {
+    catalog: () => ipcRenderer.invoke(IPC.marketplaceCatalog),
+    install: (packageId) => ipcRenderer.invoke(IPC.marketplaceInstall, packageId),
+  },
   debug: {
     databases: () => ipcRenderer.invoke(IPC.debugDatabases),
     tables: (packageId) => ipcRenderer.invoke(IPC.debugTables, packageId),

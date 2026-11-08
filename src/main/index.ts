@@ -18,6 +18,8 @@ import { FilePackageRepository } from '../infrastructure/fs/file-package-reposit
 import { FileStagingArea } from '../infrastructure/fs/file-staging-area'
 import { registerDataHandlers } from '../infrastructure/ipc/data-handlers'
 import { registerDebugHandlers } from '../infrastructure/ipc/debug-handlers'
+import { registerMarketplaceHandlers } from '../infrastructure/ipc/marketplace-handlers'
+import { InstallFromCatalog } from '../application/marketplace/install-from-catalog'
 import { registerGenerationHandlers } from '../infrastructure/ipc/generation-handlers'
 import { registerKeyHandlers } from '../infrastructure/ipc/key-handlers'
 import { registerPackageHandlers } from '../infrastructure/ipc/package-handlers'
@@ -85,6 +87,7 @@ app.whenReady().then(() => {
   })
   registerDataHandlers({ call: new PackageData(packages, data) })
   registerDebugHandlers({ inspect: new InspectData(data) })
+  registerMarketplaceHandlers({ install: new InstallFromCatalog(requests, staging, validate, randomUUID) })
   servePackages(packagesRoot)
 
   createWindow()

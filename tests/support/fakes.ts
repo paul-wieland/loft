@@ -85,6 +85,12 @@ export class InMemoryStagingArea implements StagingArea {
     return this.escapingSymlinks.has(requestId)
   }
 
+  async writeFile(requestId: string, relativePath: string, content: string): Promise<void> {
+    const files = this.files.get(requestId) ?? new Map<string, string>()
+    files.set(relativePath, content)
+    this.files.set(requestId, files)
+  }
+
   async setIcon(requestId: string, icon: string): Promise<void> {
     this.icons.set(requestId, icon)
   }

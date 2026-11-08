@@ -6,6 +6,7 @@ import type { Review } from '../application/generation/get-review'
 import type { PackageManifest } from '../domain/package/manifest'
 import type { GenerationRequest } from '../domain/requests/generation-request'
 import type { Result } from '../domain/shared/result'
+import type { CatalogTool } from '../application/marketplace/catalog'
 
 export const IPC = {
   keysStatus: 'keys:status',
@@ -20,6 +21,8 @@ export const IPC = {
   debugDatabases: 'debug:databases',
   debugTables: 'debug:tables',
   debugRows: 'debug:rows',
+  marketplaceCatalog: 'marketplace:catalog',
+  marketplaceInstall: 'marketplace:install',
 } as const
 
 export interface WorkplaceApi {
@@ -40,6 +43,10 @@ export interface WorkplaceApi {
   }
   store: {
     call(call: DataCall): Promise<Result<unknown, string>>
+  }
+  marketplace: {
+    catalog(): Promise<Result<CatalogTool[], string>>
+    install(packageId: string): Promise<Result<GenerationRequest, string>>
   }
   debug: {
     databases(): Promise<string[]>

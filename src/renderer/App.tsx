@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { House, Plus, Settings, X } from 'lucide-react'
+import { House, Plus, Settings, ShoppingBag, X } from 'lucide-react'
 
 import type { Review } from '../application/generation/get-review'
 import type { PackageManifest } from '../domain/package/manifest'
@@ -12,6 +12,7 @@ import { StartPage } from '@/components/start-page'
 import { SettingsDialog } from '@/components/settings-dialog'
 import { ToolActions } from '@/components/tool-actions'
 import { ToolIcon } from '@/components/tool-icon'
+import { MarketplacePage } from '@/components/marketplace-page'
 import type { SectionId } from '@/components/settings-dialog'
 import { ToolView } from '@/components/tool-view'
 import { Button } from '@/components/ui/button'
@@ -37,6 +38,8 @@ export function App() {
   const [busy, setBusy] = useState(false)
   const [revision, setRevision] = useState(0)
   const [databaseOpen, setDatabaseOpen] = useState(false)
+  const [marketOpen, setMarketOpen] = useState(false)
+  const [marketBusy, setMarketBusy] = useState<string | null>(null)
   // Tool whose database the view opens on; null shows every tool's database.
   const [databaseFor, setDatabaseFor] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -94,6 +97,7 @@ export function App() {
     setHomeOpen(false)
     setEditing(false)
     setDatabaseOpen(false)
+    setMarketOpen(false)
   }
 
   function openNewTool() {
@@ -101,6 +105,7 @@ export function App() {
     setHomeOpen(false)
     setEditing(false)
     setDatabaseOpen(false)
+    setMarketOpen(false)
   }
 
   function dataChanged(packageId: string) {
@@ -111,6 +116,7 @@ export function App() {
     setActiveToolId(null)
     setEditing(false)
     setDatabaseOpen(false)
+    setMarketOpen(false)
     setHomeOpen(true)
   }
 
@@ -222,6 +228,7 @@ export function App() {
     await refreshTools()
     // The tool opens in edit mode, so the next message refines it.
     setActiveToolId(packageId)
+    setMarketOpen(false)
     setEditing(true)
     setRevision((current) => current + 1)
   }
@@ -239,6 +246,44 @@ export function App() {
       review: null,
       messages: [...current.messages, { role: 'system', text: 'Rejected. Nothing was installed.' }],
     }))
+  }
+
+  function openMarketplace() {
+    setActiveToolId(null)
+    setHomeOpen(false)
+    setEditing(false)
+    setDatabaseOpen(false)
+    setMarketOpen(true)
+  }
+
+  // A marketplace install or update goes through the same review as a generated tool; nothing is added until approved.
+  async function installFromMarketplace(packageId: string) {
+    setMarketBusy(packageId)
+    const started = await window.workplace.marketplace.install(packageId)
+    setMarketBusy(null)
+    if (!started.ok) {
+      window.alert(`Could not install ${packageId}: ${started.error}`)
+      return
+    }
+    const view = await window.workplace.generation.review(started.value.id)
+    updateThread(NEW_TOOL_THREAD, (current) => ({ ...current, review: view }))
+    setReviewKey(NEW_TOOL_THREAD)
+  }
+
+  async function removeFromMarketplace(packageId: string) {
+    const tool = tools.find((t) => t.id === packageId)
+    if (!tool) return
+    if (!window.confirm(`Remove "${tool.name}"?`)) return
+    const deleteData = window.confirm(`Also delete the saved data of "${tool.name}"? OK deletes it, Cancel keeps it.`)
+    const result = await window.workplace.packages.uninstall(packageId, deleteData)
+    if (!result.ok) {
+      window.alert(`Remove failed: ${result.error}`)
+      return
+    }
+    const { [packageId]: _removed, ...rest } = threads
+    setThreads(rest)
+    if (activeToolId === packageId) setActiveToolId(null)
+    await refreshTools()
   }
 
   async function uninstall() {
@@ -285,6 +330,20 @@ export function App() {
               Home
             </button>
           )}
+          <button
+            type="button"
+            onClick={openMarketplace}
+            aria-current={marketOpen ? 'page' : undefined}
+            className={cn(
+              'mb-3 flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left text-sm transition-colors',
+              marketOpen ? 'bg-accent font-semibold text-foreground shadow-sm' : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
+            )}
+          >
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+              <ShoppingBag className="size-4" />
+            </span>
+            Marketplace
+          </button>
           <button
             type="button"
             onClick={() => setNewToolOpen(true)}
@@ -376,7 +435,9 @@ export function App() {
               </span>
             )}
             <h1 className="truncate text-sm font-medium">
-              {databaseOpen
+              {marketOpen
+                ? 'Marketplace'
+                : databaseOpen
                 ? databaseFor
                   ? `${tools.find((tool) => tool.id === databaseFor)?.name ?? databaseFor} database`
                   : 'Database'
@@ -407,7 +468,14 @@ export function App() {
           </div>
         </header>
 
-        {databaseOpen ? (
+        {marketOpen ? (
+          <MarketplacePage
+            installed={tools}
+            busyId={marketBusy}
+            onInstall={(id) => void installFromMarketplace(id)}
+            onRemove={(id) => void removeFromMarketplace(id)}
+          />
+        ) : databaseOpen ? (
           <DatabaseView key={databaseFor ?? 'all'} packageId={databaseFor} />
         ) : activeTool ? (
           <div className="flex min-h-0 flex-1 flex-col">

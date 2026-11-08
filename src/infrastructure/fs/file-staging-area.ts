@@ -55,6 +55,14 @@ export class FileStagingArea implements StagingArea {
     return false
   }
 
+  async writeFile(requestId: string, relativePath: string, content: string): Promise<void> {
+    const root = this.packageDir(requestId)
+    const target = resolve(root, relativePath)
+    if (!isInside(root, target)) throw new Error(`unsafe path ${relativePath}`)
+    await mkdir(dirname(target), { recursive: true })
+    await writeFile(target, content)
+  }
+
   async setIcon(requestId: string, icon: string): Promise<void> {
     const file = join(this.packageDir(requestId), 'manifest.json')
     const manifest = JSON.parse(await readFile(file, 'utf8')) as Record<string, unknown>
