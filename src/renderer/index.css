@@ -77,3 +77,37 @@
   box-shadow: 0 10px 30px -10px rgba(30, 30, 70, 0.25), 0 2px 6px rgba(30, 30, 70, 0.06);
 }
 
+
+/* Brand colours for the gradient accent. Classic dark and classic white keep their own values. */
+:root {
+  --brand-a: #5b5bf0;
+  --brand-b: #e65bd6;
+}
+.dark {
+  --brand-a: #8b8bff;
+  --brand-b: #e65bd6;
+}
+
+/* Loft: the default look. Colours from the Loft brand kit (cream, orange, mustard, espresso). */
+[data-style="loft"] {
+  --background: #F6E6C8;
+  --foreground: #4A2412;
+  --card: #FBF1DE;
+  --card-foreground: #4A2412;
+  --primary: #E2711D;
+  --primary-foreground: #4A2412;
+  --muted: #F3DDB8;
+  --muted-foreground: #7A3B1E;
+  --accent: #F3DDB8;
+  --accent-foreground: #4A2412;
+  --border: #E6CFA5;
+  --input: #E6CFA5;
+  --ring: #E2711D;
+  --destructive: #C4471B;
+  --dot: #E6CFA5;
+  --brand-a: #E2711D;
+  --brand-b: #E9A23B;
+}
+[data-style="loft"] body {
+  font-family: Outfit, system-ui, sans-serif;
+}

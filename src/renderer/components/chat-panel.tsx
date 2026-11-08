@@ -43,8 +43,8 @@ export function ChatPanel({
   return (
     <section className={cn('flex min-h-0 flex-col overflow-hidden bg-card', className)} aria-label="Chat">
       {banner && (
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b bg-gradient-to-r from-[#5b5bf0]/15 via-[#8b5cf6]/15 to-[#e65bd6]/15 px-4 py-2 text-sm">
-          <span className="font-medium bg-gradient-to-r from-[#5b5bf0] to-[#e65bd6] bg-clip-text text-transparent">{banner}</span>
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b bg-gradient-to-r from-[var(--brand-a)]/15 to-[var(--brand-b)]/15 px-4 py-2 text-sm">
+          <span className="font-medium bg-gradient-to-r from-[var(--brand-a)] to-[var(--brand-b)] bg-clip-text text-transparent">{banner}</span>
           {onClose && (
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X />

@@ -49,7 +49,7 @@ export function MarketplacePage({ installed, busyId, onInstall, onRemove }: Mark
             return (
               <div key={tool.id} className="panel flex flex-col gap-3 p-4">
                 <div className="flex items-start gap-3">
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#5b5bf0] to-[#e65bd6] text-white">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--brand-a)] to-[var(--brand-b)] text-white">
                     <ToolIcon name={tool.icon} className="size-4" />
                   </span>
                   <div className="min-w-0">

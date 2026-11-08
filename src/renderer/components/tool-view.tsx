@@ -12,11 +12,11 @@ interface ToolCall {
 
 export function ToolView({ manifest, onDataChanged }: { manifest: PackageManifest; onDataChanged?: () => void }) {
   const frameRef = useRef<HTMLIFrameElement>(null)
-  const { dark } = useTheme()
+  const { dark, style } = useTheme()
 
   useEffect(() => {
-    frameRef.current?.contentWindow?.postMessage({ type: 'workplace:theme', dark }, '*')
-  }, [dark])
+    frameRef.current?.contentWindow?.postMessage({ type: 'workplace:theme', dark, style }, '*')
+  }, [dark, style])
 
   useEffect(() => {
     async function onMessage(event: MessageEvent) {
@@ -25,7 +25,7 @@ export function ToolView({ manifest, onDataChanged }: { manifest: PackageManifes
 
       // The tool announces itself once its bridge is ready; send it the current theme.
       if (isReady(event.data)) {
-        frame.contentWindow?.postMessage({ type: 'workplace:theme', dark }, '*')
+        frame.contentWindow?.postMessage({ type: 'workplace:theme', dark, style }, '*')
         return
       }
       if (!isToolCall(event.data)) return
@@ -53,7 +53,7 @@ export function ToolView({ manifest, onDataChanged }: { manifest: PackageManifes
 
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
-  }, [manifest.id, dark])
+  }, [manifest.id, dark, style])
 
   return (
     <iframe

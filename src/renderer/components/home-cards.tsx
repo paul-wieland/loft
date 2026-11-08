@@ -30,7 +30,7 @@ function HomeCard({ tool, onOpen }: { tool: PackageManifest; onOpen: () => void 
   const frameRef = useRef<HTMLIFrameElement>(null)
   const loadedRef = useRef(false)
   const [failed, setFailed] = useState(false)
-  const { dark } = useTheme()
+  const { dark, style } = useTheme()
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -48,7 +48,7 @@ function HomeCard({ tool, onOpen }: { tool: PackageManifest; onOpen: () => void 
 
       if (message.type === 'workplace:ready') {
         loadedRef.current = true
-        frame.contentWindow?.postMessage({ type: 'workplace:theme', dark }, '*')
+        frame.contentWindow?.postMessage({ type: 'workplace:theme', dark, style }, '*')
         return
       }
       if (message.type === 'workplace:open') {
@@ -77,12 +77,12 @@ function HomeCard({ tool, onOpen }: { tool: PackageManifest; onOpen: () => void 
 
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
-  }, [tool.id, dark, onOpen])
+  }, [tool.id, dark, style, onOpen])
 
   return (
     <div className={cn('panel flex min-w-0 flex-col overflow-hidden', tool.homeCard?.size === 'wide' && 'sm:col-span-2')}>
       <button type="button" onClick={onOpen} className="group flex items-center gap-2 px-3 pb-1 pt-3 text-left">
-        <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-[#5b5bf0] to-[#e65bd6] text-white">
+        <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-[var(--brand-a)] to-[var(--brand-b)] text-white">
           <ToolIcon name={tool.icon} className="size-3" />
         </span>
         <span className="min-w-0 flex-1 truncate text-xs font-semibold">{tool.name}</span>

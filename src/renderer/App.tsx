@@ -19,6 +19,9 @@ import { Button } from '@/components/ui/button'
 import { applyToolOrder, loadToolOrder, moveTool, saveToolOrder } from '@/lib/tool-order'
 import { loadStartPageSettings, saveStartPageSettings, type StartPageSettings } from '@/lib/start-page-settings'
 import { cn } from '@/lib/utils'
+import { useTheme } from '@/components/theme-provider'
+import logo from '@/assets/brand/loft-logo.svg'
+import logoOnDark from '@/assets/brand/loft-logo-on-dark.svg'
 
 interface Thread {
   messages: Message[]
@@ -30,6 +33,7 @@ const NEW_TOOL_THREAD = 'new-tool'
 const EMPTY_THREAD: Thread = { messages: [], review: null }
 
 export function App() {
+  const { dark } = useTheme()
   const [tools, setTools] = useState<PackageManifest[]>([])
   const [activeToolId, setActiveToolId] = useState<string | null>(null)
   const [editing, setEditing] = useState(false)
@@ -309,9 +313,8 @@ export function App() {
   return (
     <div className="flex h-screen bg-background">
       <aside className="flex w-60 shrink-0 flex-col overflow-hidden border-r border-border bg-card">
-        <div className="flex h-14 items-center gap-2.5 px-4 font-semibold">
-          <span className="size-6 rounded-lg bg-gradient-to-br from-[#5b5bf0] to-[#e65bd6]" />
-          Loft
+        <div className="flex h-14 items-center px-4">
+          <img src={dark ? logoOnDark : logo} alt="Loft" className="h-8 w-auto" />
         </div>
         <nav className="flex-1 overflow-y-auto px-3 py-3" aria-label="Tools">
           {startPage.enabled && (
@@ -405,7 +408,7 @@ export function App() {
                       className={cn(
                         'flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors',
                         active
-                          ? 'bg-gradient-to-br from-[#5b5bf0] to-[#e65bd6] text-white shadow'
+                          ? 'bg-gradient-to-br from-[var(--brand-a)] to-[var(--brand-b)] text-white shadow'
                           : 'bg-muted group-hover:text-foreground',
                       )}
                     >
@@ -430,7 +433,7 @@ export function App() {
         <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b px-6">
           <div className="flex min-w-0 items-center gap-2.5">
             {activeTool && !databaseOpen && (
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-[#5b5bf0] to-[#e65bd6] text-white">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-[var(--brand-a)] to-[var(--brand-b)] text-white">
                 <ToolIcon name={activeTool.icon} />
               </span>
             )}
@@ -479,7 +482,7 @@ export function App() {
           <DatabaseView key={databaseFor ?? 'all'} packageId={databaseFor} />
         ) : activeTool ? (
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className={cn('flex min-h-0 flex-1', editing && 'bg-gradient-to-br from-[#5b5bf0] via-[#8b5cf6] to-[#e65bd6] p-1.5')}>
+            <div className={cn('flex min-h-0 flex-1', editing && 'bg-gradient-to-br from-[var(--brand-a)] to-[var(--brand-b)] p-1.5')}>
               <div className="flex min-h-0 flex-1 overflow-hidden bg-background">
                 <ToolView key={`${activeTool.id}:${revision}`} manifest={activeTool} onDataChanged={() => dataChanged(activeTool.id)} />
               </div>

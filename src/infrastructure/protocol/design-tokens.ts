@@ -5,10 +5,17 @@ export const DESIGN_TOKENS_CSS = `:root{
   --yellow:#ffe48a;--pink:#ffb8d1;--blue:#a9d4ff;--green:#b5ecc0;--purple:#d4c2ff;--orange:#ffc999;--white:#ffffff;--dark:#2b2f45;--danger:#d23b4e;
   --radius-panel:16px;--radius-control:11px;--shadow-panel:0 10px 30px -10px rgba(30,30,70,.25),0 2px 6px rgba(30,30,70,.06);
   --on-accent:#ffffff;
+  --brand-a:#5b5bf0;--brand-b:#e65bd6;
 }
 :root.dark{
   --bg:#111327;--dot:#2f3557;--ui:#1a1d35;--ink:#eef0fa;--muted:#9aa0bc;--accent:#8b8bff;--accent-soft:#232743;--line:#2a2f4d;
   --danger:#ff6b7d;--shadow-panel:0 10px 30px -10px rgba(0,0,0,.6),0 2px 6px rgba(0,0,0,.3);--on-accent:#111327;
+  --brand-a:#8b8bff;--brand-b:#e65bd6;
+}
+:root[data-style="loft"]{
+  --bg:#F6E6C8;--dot:#E6CFA5;--ui:#FBF1DE;--ink:#4A2412;--muted:#7A3B1E;--accent:#E2711D;--accent-soft:#F3DDB8;--line:#E6CFA5;
+  --danger:#C4471B;--shadow-panel:0 10px 30px -12px rgba(74,36,18,.25),0 2px 6px rgba(74,36,18,.08);--on-accent:#4A2412;
+  --brand-a:#E2711D;--brand-b:#E9A23B;
 }
 html,body{margin:0;min-height:100%;font-family:Inter,-apple-system,"Segoe UI",system-ui,sans-serif;color:var(--ink);background:var(--bg)}
 .dot-grid{background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.2px,transparent 1.3px);background-size:24px 24px}

@@ -1,60 +1,55 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
-export type Theme = 'light' | 'dark' | 'system'
+// Loft is the default look. Classic white and Classic dark keep the look the app had before.
+export type AppStyle = 'loft' | 'classic-white' | 'classic-dark'
 
-const STORAGE_KEY = 'workplace-theme'
+export const STYLES: { id: AppStyle; label: string }[] = [
+  { id: 'loft', label: 'Loft' },
+  { id: 'classic-white', label: 'Classic white' },
+  { id: 'classic-dark', label: 'Classic dark' },
+]
+
+export const DEFAULT_STYLE: AppStyle = 'loft'
+
+const STORAGE_KEY = 'workplace-style'
 
 interface ThemeContextValue {
-  theme: Theme
+  style: AppStyle
   dark: boolean
-  setTheme: (theme: Theme) => void
+  setStyle: (style: AppStyle) => void
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
-function readStoredTheme(): Theme {
+function readStoredStyle(): AppStyle {
   try {
     const value = window.localStorage.getItem(STORAGE_KEY)
-    if (value === 'light' || value === 'dark' || value === 'system') return value
+    if (value === 'loft' || value === 'classic-white' || value === 'classic-dark') return value
   } catch {
-    // Storage can be unavailable; fall back to the system setting.
+    // Storage can be unavailable; use the default look.
   }
-  return 'system'
-}
-
-function isDarkTheme(theme: Theme): boolean {
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-  return theme === 'dark' || (theme === 'system' && prefersDark)
+  return DEFAULT_STYLE
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(readStoredTheme)
-  const [dark, setDark] = useState(() => isDarkTheme(theme))
+  const [style, setStyleState] = useState<AppStyle>(readStoredStyle)
+  const dark = style === 'classic-dark'
 
   useEffect(() => {
-    const update = () => {
-      const next = isDarkTheme(theme)
-      document.documentElement.classList.toggle('dark', next)
-      setDark(next)
-    }
-    update()
-    if (theme !== 'system') return
+    document.documentElement.classList.toggle('dark', dark)
+    document.documentElement.dataset.style = style
+  }, [style, dark])
 
-    const media = window.matchMedia('(prefers-color-scheme: dark)')
-    media.addEventListener('change', update)
-    return () => media.removeEventListener('change', update)
-  }, [theme])
-
-  function setTheme(next: Theme): void {
+  function setStyle(next: AppStyle): void {
     try {
       window.localStorage.setItem(STORAGE_KEY, next)
     } catch {
-      // Keep the theme in memory when storage is unavailable.
+      // Keep the style in memory when storage is unavailable.
     }
-    setThemeState(next)
+    setStyleState(next)
   }
 
-  return <ThemeContext.Provider value={{ theme, dark, setTheme }}>{children}</ThemeContext.Provider>
+  return <ThemeContext.Provider value={{ style, dark, setStyle }}>{children}</ThemeContext.Provider>
 }
 
 export function useTheme(): ThemeContextValue {

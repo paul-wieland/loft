@@ -196,7 +196,7 @@ function CityCard({ location, now, onRemove }: { location: StartPageLocation; no
         <span className="truncate">{location.name}</span>
       </div>
       <div>
-        <p className="bg-gradient-to-r from-[#5b5bf0] to-[#e65bd6] bg-clip-text text-xl font-semibold tabular-nums text-transparent">
+        <p className="bg-gradient-to-r from-[var(--brand-a)] to-[var(--brand-b)] bg-clip-text text-xl font-semibold tabular-nums text-transparent">
           {time}
         </p>
         <p className="text-[10px] text-muted-foreground">{day}</p>
@@ -211,7 +211,7 @@ function CityCard({ location, now, onRemove }: { location: StartPageLocation; no
           const Icon = WEATHER_ICONS[description.icon]
           return (
             <div className="flex items-center gap-2">
-              <span className="flex size-6 items-center justify-center rounded-md bg-gradient-to-br from-[#5b5bf0] to-[#e65bd6] text-white">
+              <span className="flex size-6 items-center justify-center rounded-md bg-gradient-to-br from-[var(--brand-a)] to-[var(--brand-b)] text-white">
                 <Icon className="size-3" />
               </span>
               <div>

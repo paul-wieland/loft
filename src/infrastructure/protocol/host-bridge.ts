@@ -15,6 +15,7 @@ export function bridgeSource(role: BridgeRole): string {
     if (!message) return;
     if (message.type === 'workplace:theme') {
       document.documentElement.classList.toggle('dark', message.dark === true);
+      if (typeof message.style === 'string') document.documentElement.dataset.style = message.style;
       return;
     }
     if (message.type !== 'workplace:result') return;
