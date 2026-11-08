@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="Loft app icon">
+<rect width="1024" height="1024" fill="#4A2412"/><g transform="translate(154.0 288.25) scale(7.458333333333333)">
+  <clipPath id="sunI"><path d="M8 56 A40 40 0 0 1 88 56 Z"/></clipPath>
+  <g clip-path="url(#sunI)">
+    <rect x="0" y="0" width="96" height="29" fill="#E9A23B"/>
+    <rect x="0" y="32" width="96" height="9" fill="#E2711D"/>
+    <rect x="0" y="45" width="96" height="11" fill="#C4471B"/>
+  </g>
+  <rect x="4" y="55" width="88" height="5" rx="2.5" fill="#F6E6C8"/>
+</g>
+</svg>
