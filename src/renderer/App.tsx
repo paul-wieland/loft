@@ -174,17 +174,14 @@ export function App() {
     await generate(threadKey, text, text, editing && activeTool ? activeTool.id : undefined)
   }
 
-  async function createTool(name: string, description: string, withCard: boolean) {
+  async function createTool(name: string, description: string) {
     if (!(await requireApiKey())) return
     setNewToolOpen(false)
     openNewTool()
-    const card = withCard
-      ? '\nAlso give it a home card: add "homeCard": {"size": "small"} to manifest.json and write ui/card.js.'
-      : ''
     void generate(
       NEW_TOOL_THREAD,
       `New tool "${name}": ${description}`,
-      `Name the tool "${name}".\n${description}${card}`,
+      `Name the tool "${name}".\n${description}`,
     )
   }
 

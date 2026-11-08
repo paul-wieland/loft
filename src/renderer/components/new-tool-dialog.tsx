@@ -6,13 +6,12 @@ import { Input } from '@/components/ui/input'
 
 interface NewToolDialogProps {
   onClose: () => void
-  onCreate: (name: string, description: string, withCard: boolean) => void
+  onCreate: (name: string, description: string) => void
 }
 
 export function NewToolDialog({ onClose, onCreate }: NewToolDialogProps) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [withCard, setWithCard] = useState(false)
   const ready = name.trim() !== '' && description.trim() !== ''
 
   useEffect(() => {
@@ -25,7 +24,7 @@ export function NewToolDialog({ onClose, onCreate }: NewToolDialogProps) {
 
   function submit(event: FormEvent) {
     event.preventDefault()
-    if (ready) onCreate(name.trim(), description.trim(), withCard)
+    if (ready) onCreate(name.trim(), description.trim())
   }
 
   return (
@@ -76,19 +75,6 @@ export function NewToolDialog({ onClose, onCreate }: NewToolDialogProps) {
               className="flex w-full resize-none rounded-md border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
-
-          <label className="flex items-start gap-3">
-            <input
-              type="checkbox"
-              checked={withCard}
-              onChange={(event) => setWithCard(event.target.checked)}
-              className="mt-1 size-4 accent-[#5b5bf0]"
-            />
-            <span>
-              <span className="block text-sm font-medium">Show a card on the home page</span>
-              <span className="block text-sm text-muted-foreground">A small read-only summary, such as due items or a shortcut.</span>
-            </span>
-          </label>
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
