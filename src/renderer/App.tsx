@@ -317,7 +317,7 @@ export function App() {
 
   return (
     <div className="flex h-screen bg-background">
-      <aside className="flex w-60 shrink-0 flex-col overflow-hidden border-r border-border bg-card">
+      <aside className="flex w-60 shrink-0 flex-col overflow-hidden border-r border-border bg-[var(--nav)]">
         <div className="flex h-14 items-center px-4">
           <img src={dark ? logoOnDark : logo} alt="Loft" className="h-8 w-auto" />
         </div>
@@ -434,7 +434,7 @@ export function App() {
         </div>
       </aside>
 
-      <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-card">
+      <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-[var(--content)]">
         <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b px-6">
           <div className="flex min-w-0 items-center gap-2.5">
             {activeTool && !databaseOpen && (
