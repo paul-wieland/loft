@@ -453,8 +453,6 @@ export function App() {
       )}
       {settingsOpen && (
         <SettingsDialog
-          startPage={startPage}
-          onStartPageChange={changeStartPage}
           onClose={() => setSettingsOpen(false)} onOpenDatabase={() => {
             setDatabaseFor(null)
             setDatabaseOpen(true)

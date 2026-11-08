@@ -1,29 +1,24 @@
 import { useEffect, useState } from 'react'
-import { Database, House, Palette, Sparkles, X, type LucideIcon } from 'lucide-react'
+import { Database, Palette, Sparkles, X, type LucideIcon } from 'lucide-react'
 
 import { ApiKeySettings } from '@/components/api-key-settings'
-import { StartPageOptions } from '@/components/start-page-options'
 import { ThemeToggle } from '@/components/theme-toggle'
-import type { StartPageSettings } from '@/lib/start-page-settings'
 import { Button } from '@/components/ui/button'
 
 interface SettingsDialogProps {
   onClose: () => void
   onOpenDatabase: () => void
-  startPage: StartPageSettings
-  onStartPageChange: (settings: StartPageSettings) => void
 }
 
-type SectionId = 'appearance' | 'start-page' | 'claude' | 'data'
+type SectionId = 'appearance' | 'claude' | 'data'
 
 const SECTIONS: { id: SectionId; label: string; icon: LucideIcon }[] = [
   { id: 'appearance', label: 'Appearance', icon: Palette },
-  { id: 'start-page', label: 'Start page', icon: House },
   { id: 'claude', label: 'Claude', icon: Sparkles },
   { id: 'data', label: 'Data', icon: Database },
 ]
 
-export function SettingsDialog({ onClose, onOpenDatabase, startPage, onStartPageChange }: SettingsDialogProps) {
+export function SettingsDialog({ onClose, onOpenDatabase }: SettingsDialogProps) {
   const [section, setSection] = useState<SectionId>('appearance')
 
   useEffect(() => {
@@ -68,7 +63,6 @@ export function SettingsDialog({ onClose, onOpenDatabase, startPage, onStartPage
           </header>
           <div className="flex-1 overflow-y-auto p-6">
             {section === 'appearance' && <ThemeToggle />}
-            {section === 'start-page' && <StartPageOptions settings={startPage} onChange={onStartPageChange} />}
             {section === 'claude' && <ApiKeySettings />}
             {section === 'data' && (
               <div className="space-y-2">
