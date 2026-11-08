@@ -3,7 +3,7 @@ import { Download, RefreshCw, Trash2 } from 'lucide-react'
 
 import type { CatalogTool } from '../../application/marketplace/catalog'
 import type { PackageManifest } from '../../domain/package/manifest'
-import { ToolIcon } from '@/components/tool-icon'
+import { ToolTile } from '@/components/tool-brand'
 import { Button } from '@/components/ui/button'
 
 interface MarketplacePageProps {
@@ -49,9 +49,7 @@ export function MarketplacePage({ installed, busyId, onInstall, onRemove }: Mark
             return (
               <div key={tool.id} className="panel flex flex-col gap-3 p-4">
                 <div className="flex items-start gap-3">
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--brand-a)] to-[var(--brand-b)] text-white">
-                    <ToolIcon name={tool.icon} className="size-4" />
-                  </span>
+                  <ToolTile id={tool.id} icon={tool.icon} />
                   <div className="min-w-0">
                     <p className="truncate font-semibold">{tool.name}</p>
                     <p className="text-xs text-muted-foreground">{status}</p>

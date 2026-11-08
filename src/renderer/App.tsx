@@ -11,7 +11,6 @@ import { ReviewDialog } from '@/components/review-dialog'
 import { StartPage } from '@/components/start-page'
 import { SettingsDialog } from '@/components/settings-dialog'
 import { ToolActions } from '@/components/tool-actions'
-import { ToolIcon } from '@/components/tool-icon'
 import { MarketplacePage } from '@/components/marketplace-page'
 import type { SectionId } from '@/components/settings-dialog'
 import { ToolView } from '@/components/tool-view'
@@ -20,6 +19,7 @@ import { applyToolOrder, loadToolOrder, moveTool, saveToolOrder } from '@/lib/to
 import { loadStartPageSettings, saveStartPageSettings, type StartPageSettings } from '@/lib/start-page-settings'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/components/theme-provider'
+import { ToolMark } from '@/components/tool-brand'
 import logo from '@/assets/brand/loft-logo.svg'
 import logoOnDark from '@/assets/brand/loft-logo-on-dark.svg'
 
@@ -397,7 +397,7 @@ export function App() {
                           : 'bg-muted group-hover:text-foreground',
                       )}
                     >
-                      <ToolIcon name={tool.icon} />
+                      <ToolMark id={tool.id} icon={tool.icon} />
                     </span>
                     <span className="truncate">{tool.name}</span>
                   </button>
@@ -419,7 +419,7 @@ export function App() {
           <div className="flex min-w-0 items-center gap-2.5">
             {activeTool && !databaseOpen && (
               <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-[var(--brand-a)] to-[var(--brand-b)] text-white">
-                <ToolIcon name={activeTool.icon} />
+                <ToolMark id={activeTool.id} icon={activeTool.icon} />
               </span>
             )}
             <h1 className="truncate text-sm font-medium">

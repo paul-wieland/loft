@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ChevronRight } from 'lucide-react'
 
 import type { PackageManifest } from '../../domain/package/manifest'
-import { ToolIcon } from '@/components/tool-icon'
+import { ToolMark } from '@/components/tool-brand'
 import { useTheme } from '@/components/theme-provider'
 import { cn } from '@/lib/utils'
 
@@ -83,7 +83,7 @@ function HomeCard({ tool, onOpen }: { tool: PackageManifest; onOpen: () => void 
     <div className={cn('panel flex min-w-0 flex-col overflow-hidden', tool.homeCard?.size === 'wide' && 'sm:col-span-2')}>
       <button type="button" onClick={onOpen} className="group flex items-center gap-2 px-3 pb-1 pt-3 text-left">
         <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-[var(--brand-a)] to-[var(--brand-b)] text-white">
-          <ToolIcon name={tool.icon} className="size-3" />
+          <ToolMark id={tool.id} icon={tool.icon} className="size-3" />
         </span>
         <span className="min-w-0 flex-1 truncate text-xs font-semibold">{tool.name}</span>
         <ChevronRight className="size-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
