@@ -36,7 +36,7 @@ function createWindow(): void {
     width: 1100,
     height: 720,
     title: 'Loft',
-    icon: join(__dirname, '../../resources/icon.png'),
+    icon: appIconPath,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
@@ -57,12 +57,15 @@ function createWindow(): void {
   }
 }
 
+// The packaged app ships the icon next to the code; a dev run reads it from the project.
+const appIconPath = app.isPackaged ? join(process.resourcesPath, 'icon.png') : join(__dirname, '../../resources/icon.png')
+
 // The menu bar and the app menu take their name from here, so it must be set before the app is ready.
 app.setName('Loft')
 
 app.whenReady().then(() => {
   // The dock shows the Loft icon even when the app runs unpackaged, where Electron would show its own.
-  app.dock?.setIcon(join(__dirname, '../../resources/icon.png'))
+  app.dock?.setIcon(appIconPath)
   const userData = app.getPath('userData')
   const stagingRoot = join(userData, 'staging')
   const packagesRoot = join(userData, 'packages')
