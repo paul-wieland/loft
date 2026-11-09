@@ -411,6 +411,7 @@ export function App() {
             <Settings />
             Settings
           </Button>
+          <p className="px-3 pt-2 text-xs text-muted-foreground">Loft {__APP_VERSION__}</p>
         </div>
       </aside>
 
