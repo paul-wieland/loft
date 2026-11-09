@@ -67,8 +67,10 @@
             "x64"
           ]
         }
-      ]
+      ],
+      "identity": null
     },
-    "artifactName": "Loft-${version}-${arch}.${ext}"
+    "artifactName": "Loft-${version}-${arch}.${ext}",
+    "afterPack": "scripts/adhoc-sign.cjs"
   }
 }
