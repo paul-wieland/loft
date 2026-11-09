@@ -27,12 +27,15 @@ These tools come from the Marketplace. Each one has its own sample screenshot be
 | Tasks | A task board with boards, labels, due dates, and drag and drop between columns |
 | Whiteboard | An infinite canvas with sticky notes, shapes, text, lines and arrows |
 | Relationship Map | People placed in four circles of closeness, grouped by section, with several boards |
+| Notes | Notebooks with pages, rich text, checklists and a privacy mode that blurs the text |
 
 ![Tasks board with labels and due dates](docs/screenshots/tasks.png)
 
 ![Whiteboard with sticky notes and an arrow](docs/screenshots/whiteboard.png)
 
 ![Relationship Map with people in four circles](docs/screenshots/relationship-map.png)
+
+![Notes with notebooks, pages and a checklist](docs/screenshots/notes.png)
 
 ## Marketplace
 
