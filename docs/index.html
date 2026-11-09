@@ -287,6 +287,13 @@
         font-size: 15px;
       }
 
+      .download-note {
+        margin: 16px 0 0;
+        font-size: 14px;
+        color: var(--muted);
+        max-width: 640px;
+      }
+
       footer {
         background: var(--espresso);
         color: var(--cream);
@@ -347,9 +354,14 @@
             and it runs on your computer with its data kept locally.
           </p>
           <div class="actions">
-            <a class="button" href="https://github.com/paul-wieland/loft#getting-started">Get started</a>
+            <a class="button" id="download" href="https://github.com/paul-wieland/loft/releases/download/v0.1.0/Loft-0.1.0-arm64.dmg">Download for macOS</a>
+            <a class="button secondary" href="https://github.com/paul-wieland/loft#getting-started">Get started</a>
             <a class="button secondary" href="https://github.com/paul-wieland/loft">View on GitHub</a>
           </div>
+          <p class="download-note">
+            Apple silicon Mac. <a id="download-intel" href="https://github.com/paul-wieland/loft/releases/download/v0.1.0/Loft-0.1.0-x64.dmg">Intel Mac? Download the Intel version</a>.
+            Open the disk image and drag Loft into Applications. The app is not signed yet, so the first time, right-click it and choose Open.
+          </p>
           <img class="hero-shot" src="screenshots/home.png" alt="Loft home screen with city times and weather" />
         </div>
       </div>
@@ -482,5 +494,22 @@ npm run dev</code></pre>
         </div>
       </div>
     </footer>
+
+    <script>
+      // Chromium browsers can tell an Intel Mac from an Apple silicon Mac. Safari cannot, so it gets the Apple silicon build.
+      (async () => {
+        const mainLink = document.getElementById('download');
+        const intelLink = document.getElementById('download-intel');
+        try {
+          const values = await navigator.userAgentData?.getHighEntropyValues(['architecture']);
+          if (values?.architecture === 'x86') {
+            mainLink.href = intelLink.href;
+            mainLink.textContent = 'Download for macOS (Intel)';
+          }
+        } catch {
+          // Keep the Apple silicon link.
+        }
+      })();
+    </script>
   </body>
 </html>

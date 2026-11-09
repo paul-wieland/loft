@@ -60,8 +60,15 @@
       "icon": "resources/icon.icns",
       "category": "public.app-category.productivity",
       "target": [
-        "dmg"
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
       ]
-    }
+    },
+    "artifactName": "Loft-${version}-${arch}.${ext}"
   }
 }
