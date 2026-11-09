@@ -35,6 +35,9 @@ function createWindow(): void {
   const window = new BrowserWindow({
     width: 1100,
     height: 720,
+    // Smaller than this, the sidebar and the tools no longer fit.
+    minWidth: 960,
+    minHeight: 640,
     title: 'Loft',
     icon: appIconPath,
     webPreferences: {
